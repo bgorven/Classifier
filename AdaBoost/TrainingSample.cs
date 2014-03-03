@@ -8,10 +8,10 @@ namespace AdaBoost
 {
     internal struct TrainingSample<Sample> where Sample : ISample
     {
-        public TrainingSample(Sample s, int index, float actual)
+        public TrainingSample(Sample s, int index, float weight, float actual)
         {
             this.sample = s;
-            this.weight = 1.0f;
+            this.weight = weight;
             this.actual = actual;
             this.index = index;
             this._confidenceP = new KahanSum();

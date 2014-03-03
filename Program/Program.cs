@@ -120,7 +120,8 @@ namespace ConsoleTrainer
 
                     for (int noise = 0; noise < 2; noise++)
                     {
-                        float error = 0.05f * noise;
+                        double error = 0.05 * noise;
+                        int flippedLabels = 0;
 
                         testTask.Wait();
                         testTask = test.WriteAsync(encoding.GetBytes(error.ToString()), 0, encoding.GetBytes(error.ToString()).Length);
@@ -141,7 +142,11 @@ namespace ConsoleTrainer
                             {
                                 s.features[j] = pos ? 1 : -1;
                             }
-                            if (rand.NextDouble() < error) pos = !pos;
+                            if (rand.NextDouble() < error)
+                            {
+                                flippedLabels++;
+                                pos = !pos;
+                            }
                             if (pos) pointsPos.Add(s);
                             else pointsNeg.Add(s);
                         }
@@ -155,7 +160,11 @@ namespace ConsoleTrainer
                             {
                                 s.features[j] = (pos ^ j > 10) ? 1 : -1;
                             }
-                            if (rand.NextDouble() < error) pos = !pos;
+                            if (rand.NextDouble() < error)
+                            {
+                                flippedLabels++;
+                                pos = !pos;
+                            }
                             if (pos) pointsPos.Add(s);
                             else pointsNeg.Add(s);
                         }
@@ -181,7 +190,11 @@ namespace ConsoleTrainer
                                 s.features[j] = s.features[11 + loc];
                                 s.features[11 + loc] = (pos ^ j > 16) ? 1 : -1;
                             }
-                            if (rand.NextDouble() < error) pos = !pos;
+                            if (rand.NextDouble() < error)
+                            {
+                                flippedLabels++;
+                                pos = !pos;
+                            }
                             if (pos) pointsPos.Add(s);
                             else pointsNeg.Add(s);
                         }
@@ -190,7 +203,7 @@ namespace ConsoleTrainer
 
                         int convergence = 0;
                         int prev = 0;
-                        Console.WriteLine("Noise: " + error);
+                        Console.WriteLine("Noise: " + error + " (" + flippedLabels + " label errors)");
                         for (int i = 0; i < 1000; i++)
                         {
                             float cost = t.addLayer();
@@ -211,7 +224,7 @@ namespace ConsoleTrainer
                                 Console.WriteLine("Fully trained after " + (i-9) + " layers.");
                                 break;
                             }
-                            else //if ((i+1) % 10 == 0)
+                            else if ((i+1) % 10 == 0)
                             {
                                 Console.WriteLine("[" + testErrors + " / " + veriErrors + " ] errors after " + (i+1) + " layers.");
                             }

@@ -37,9 +37,10 @@ namespace AdaBoost
         public Trainer(IEnumerable<ILearner<Sample>> learners, List<Sample> positiveSamples, List<Sample> negativeSamples)
         {
             this.learners = learners.AsEnumerable();
-            this.positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<Sample>(s, i, 1))).ToArray();
+            float count = positiveSamples.Count + negativeSamples.Count;
+            this.positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<Sample>(s, i, 1f/count, 1f))).ToArray();
             int offset = positiveSamples.Count;
-            this.negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<Sample>(s, i + offset, -1))).ToArray();
+            this.negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<Sample>(s, i + offset, 1f/count, -1f))).ToArray();
 
             this.classifier = new Classifier<Sample>();
 
@@ -82,49 +83,55 @@ namespace AdaBoost
 
                 classifier.addLayer(layer);
 
-                float maxWeight = 0;
+                float oldWeight = 0, newWeight = 0;
 
                 //Add new layer's output to each learner's cumulative score, recalculate weight, find highest weight
                 for (int j = 0; j < positiveSamples.Length; j++)
                 {
-                    positiveSamples[j].addConfidence(outputs[j] > layer.threshold ? layer.coefPos : layer.coefNeg);
-                    positiveSamples[j].weight = (float)Math.Exp(-positiveSamples[j].confidence * positiveSamples[j].actual);
-                    maxWeight = (float)Math.Max(positiveSamples[j].weight, maxWeight);
+                    oldWeight += (float)Math.Exp(-positiveSamples[j].confidence);
+                    positiveSamples[j].addConfidence(outputs[positiveSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
+                    positiveSamples[j].weight = (float)Math.Exp(-positiveSamples[j].confidence);
+                    newWeight += positiveSamples[j].weight;
                     j++;
                 }
                 for (int j = 0; j < negativeSamples.Length; j++)
                 {
-                    negativeSamples[j].addConfidence(outputs[j] > layer.threshold ? layer.coefPos : layer.coefNeg);
-                    negativeSamples[j].weight = (float)Math.Exp(-negativeSamples[j].confidence * negativeSamples[j].actual);
-                    maxWeight = (float)Math.Max(negativeSamples[j].weight, maxWeight);
+                    oldWeight += (float)Math.Exp(negativeSamples[j].confidence);
+                    negativeSamples[j].addConfidence(outputs[negativeSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
+                    negativeSamples[j].weight = (float)Math.Exp(negativeSamples[j].confidence);
+                    newWeight += negativeSamples[j].weight;
                     j++;
                 }
 
-
-                if (float.IsPositiveInfinity(maxWeight))
+#if DEBU
+                if (!approxEqual(newWeight / oldWeight, bestLoss))
                 {
-                    throw new Exception("Error: sample with infinite weight");
+                    throw new Exception("Weight calculation wrong");
                 }
+#endif
 
                 //Normalize weights
-                reWeight(maxWeight);
+                reWeight();
             }
 
             return bestLoss;
         }
 
-        private void reWeight(float scalingFactor)
+        private bool approxEqual(float l, float r)
         {
-            float sum = sumWeights(scalingFactor, positiveSamples) + sumWeights(scalingFactor, negativeSamples);
+            return (l + l / 10) > r && (l - l / 10) < r;
+        }
 
-            for (int i = 0; i< positiveSamples.Length; i++)
+        private void reWeight()
+        {
+            float sum = sumWeights(positiveSamples) + sumWeights(negativeSamples);
+
+            for (int i = 0; i < positiveSamples.Length; i++)
             {
-                positiveSamples[i].weight /= scalingFactor;
                 positiveSamples[i].weight /= sum;
             }
             for (int i = 0; i < negativeSamples.Length; i++)
             {
-                negativeSamples[i].weight /= scalingFactor;
                 negativeSamples[i].weight /= sum;
             }
         }
@@ -133,34 +140,33 @@ namespace AdaBoost
         private KeyValuePair<Layer<Sample>, float[]>? bestLearner;
         private float bestLoss = float.PositiveInfinity;
 
-        private float getLoss(float coef1, float coef2, float[] predictions, bool[] coefSelect, float target)
+        private float getLoss(float coefTrue, float coefFalse, IEnumerable<Tuple<float,bool>> predictions, float target)
         {
-            double cost1 = 0, cost2 = 0;
+            double cost = 0;
 
-            for (int i = 0; i < predictions.Length; i++)
+            foreach (var p in predictions)
             {
-                cost1 += coefSelect[i] ? Math.Exp(-(predictions[i] + coef1) * target) : 0;
-                cost2 += coefSelect[i] ? 0 : Math.Exp(-(predictions[i] + coef2) * target);
+                cost += Math.Exp(-(p.Item1 + (p.Item2 ? coefTrue : coefFalse)) * target);
             }
 
-            return (float)(cost1 + cost2);
+            return (float)cost;
         }
 
-        private float sumWeights(float scalingFactor, TrainingSample<Sample>[] samples)
+        private float sumWeights(TrainingSample<Sample>[] samples)
         {
             float sum = 0;
 
-            samples.OrderBy(s => s.weight);
+            Array.Sort(samples, (l, r) => l.weight.CompareTo(r.weight));
 
             for (int i = 0; i < samples.Length; i++)
             {
-                sum += samples[i].weight / scalingFactor;
+                sum += samples[i].weight;
             }
 
             return sum;
         }
 
-        private void sumWeights(float[] weights, bool[] coefSelect, ref float sum1, ref float sum2)
+        private void sumWeights(float[] weights, bool[] coefSelect, ref double sum1, ref double sum2)
         {
 #if DEBUG
             if (weights.Length != coefSelect.Length) throw new Exception("weights.Length != coefSelect.Length");
@@ -188,7 +194,7 @@ namespace AdaBoost
             Parallel.ForEach(
                 predictions,
                 () => new LayerHolder(float.PositiveInfinity, null, null),
-                (p, s, best) => { return bestLayerSetup(learner, p.Key, p.Value, best); },
+                (p, s, best) => bestLayerSetup(learner, p.Key, p.Value, best),
                 setBest
             );
         }
@@ -244,12 +250,14 @@ namespace AdaBoost
         {
             LayerHolder result = optimizeCoefficients(learner, configuration, predictions);
 
+#if DEBUG
             if (float.IsInfinity(result.loss))
             {
                 ;//let me know
             }
+#endif
 
-            if (result.loss < best.loss) best = result;
+            best = result.loss < best.loss ? result : best;
 
             return best;
         }
@@ -284,7 +292,6 @@ namespace AdaBoost
             float bestNeg = float.NegativeInfinity;
             float threshold = float.NegativeInfinity;
 
-            float coefNeg = -1, coefPos = 1;
             while (threshold < float.PositiveInfinity)
             {
                 {
@@ -295,26 +302,36 @@ namespace AdaBoost
                     foreach (var s in negativeSamples) negativeCorrect[i++] = outputs[s.index] <= threshold;
                 }
 
-                float sumWeightsPosCorrect = 0;
-                float sumWeightsPosIncorrect = 0;
-                float sumWeightsNegCorrect = 0;
-                float sumWeightsNegIncorrect = 0;
+                double sumWeightsPosCorrect = 0;
+                double sumWeightsPosIncorrect = 0;
+                double sumWeightsNegCorrect = 0;
+                double sumWeightsNegIncorrect = 0;
 
                 sumWeights(positiveWeights, positiveCorrect, ref sumWeightsPosCorrect, ref sumWeightsPosIncorrect);
                 sumWeights(negativeWeights, negativeCorrect, ref sumWeightsNegCorrect, ref sumWeightsNegIncorrect);
-                coefPos = (float)Math.Log(sumWeightsPosCorrect / sumWeightsNegIncorrect) / 2f;
-                coefNeg = (float)Math.Log(sumWeightsNegCorrect / sumWeightsPosIncorrect) / -2f;
 
-                double error = 0;
-                if (!float.IsNaN(coefPos)) error += sumWeightsPosCorrect * Math.Exp(-coefPos) + sumWeightsNegIncorrect * Math.Exp(coefPos);
-                if (!float.IsNaN(coefNeg)) error += sumWeightsNegCorrect * Math.Exp(coefNeg) + sumWeightsPosIncorrect * Math.Exp(-coefNeg);
-                float loss = (float)error;
+                float coefPos = (float)Math.Log(sumWeightsPosCorrect / sumWeightsNegIncorrect) / 2;
+                float coefNeg = (float)Math.Log(sumWeightsNegCorrect / sumWeightsPosIncorrect) / -2;
+
+                coefPos = float.IsNaN(coefPos) ? 0 : coefPos;
+                coefNeg = float.IsNaN(coefNeg) ? 0 : coefNeg;
+
+                float loss = (float)(sumWeightsPosCorrect * Math.Exp(-coefPos) + sumWeightsNegIncorrect * Math.Exp(coefPos));
+                loss += (float)(sumWeightsNegCorrect * Math.Exp(coefNeg) + sumWeightsPosIncorrect * Math.Exp(-coefNeg));
 
 #if DEBUG
+                if (!approxEqual((float)(sumWeightsNegCorrect + sumWeightsNegIncorrect + sumWeightsPosCorrect + sumWeightsPosIncorrect), 1))
+                {
+                    ;
+                }
                 if (!perfect && float.IsInfinity(coefNeg) || float.IsInfinity(coefPos))
                 {
                     throw new Exception("Unexpected coefficients");
                 }
+
+                //float calcLoss = 0;
+                //calcLoss += getLoss(coefPos, coefNeg, positiveSamples.Select(s => s.confidence).Zip(positiveCorrect, (s, c) => new Tuple<float, bool>(s, c)), 1f);
+                //calcLoss += getLoss(coefNeg, coefPos, negativeSamples.Select(s => s.confidence).Zip(negativeCorrect, (s, c) => new Tuple<float, bool>(s, c)), -1f);
 #endif
 
                 if (!float.IsNaN(loss) && loss < bestCost)

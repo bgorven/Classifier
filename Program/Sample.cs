@@ -57,6 +57,11 @@ namespace ConsoleTrainer
                 return "Sample.Learner " + feature;
             }
 
+            public override string ToString()
+            {
+                return getUniqueIDString();
+            }
+
             public struct param : Configuration<ILearner<Sample>, Sample> { }
         }
     }
