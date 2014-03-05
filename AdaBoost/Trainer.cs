@@ -38,9 +38,9 @@ namespace AdaBoost
         {
             this.learners = learners.ToArray();
             float count = positiveSamples.Count + negativeSamples.Count;
-            this.positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<Sample>(s, i, 1f/count, 1f))).ToArray();
+            this.positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<Sample>(s, i, 1f, 1f))).ToArray();
             int offset = positiveSamples.Count;
-            this.negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<Sample>(s, i + offset, 1f/count, -1f))).ToArray();
+            this.negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<Sample>(s, i + offset, 1f, -1f))).ToArray();
 
             this.classifier = new Classifier<Sample>();
 
@@ -67,6 +67,7 @@ namespace AdaBoost
         public float addLayer()
         {
             bestLoss = float.PositiveInfinity;
+            double loss = 0;
 
             //Parallel.ForEach(learners, learner => bestConfiguration(learner));
             foreach (var learner in learners)
@@ -74,45 +75,44 @@ namespace AdaBoost
                 bestConfiguration(learner);
             }
 
+            //Reversing the learner list each iteration means our mru cache will behave more like an lru cache
             Array.Reverse(learners);
 
-            if (this.bestLearner.HasValue)
+            //Summing sorted values is more numerically stable than summing unsorted values. This operation only needs to be
+            //performed once per iteration, and improves the accuracy of all subsequent summations during weak leraner selection.
+            Array.Sort(positiveSamples, (l, r) => l.weight.CompareTo(r.weight));
+            Array.Sort(negativeSamples, (l, r) => l.weight.CompareTo(r.weight));
+
+            if (this.bestLearner.HasValue && bestLoss < prevLoss)
             {
                 var outputs = this.bestLearner.Value.Value;
                 var layer = this.bestLearner.Value.Key;
 
                 classifier.addLayer(layer);
 
-                float oldLoss = 0, newLoss = 0;
-
                 //Add new layer's output to each learner's cumulative score, recalculate weight, find highest weight
                 for (int j = 0; j < positiveSamples.Length; j++)
                 {
-                    oldLoss += (float)Math.Exp(-positiveSamples[j].confidence);
                     positiveSamples[j].addConfidence(outputs[positiveSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
-                    positiveSamples[j].weight = (float)Math.Exp(-positiveSamples[j].confidence);
-                    newLoss += positiveSamples[j].weight;
-                    j++;
+                    loss += (positiveSamples[j].weight = (float)Math.Exp(-positiveSamples[j].confidence));
                 }
                 for (int j = 0; j < negativeSamples.Length; j++)
                 {
-                    oldLoss += (float)Math.Exp(negativeSamples[j].confidence);
                     negativeSamples[j].addConfidence(outputs[negativeSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
-                    negativeSamples[j].weight = (float)Math.Exp(negativeSamples[j].confidence);
-                    newLoss += negativeSamples[j].weight;
-                    j++;
+                    loss += (negativeSamples[j].weight = (float)Math.Exp(negativeSamples[j].confidence));
                 }
 
 #if DEBUG
-                if (newLoss > oldLoss) throw new Exception("Loss went up");
-                if (!approxEqual(newLoss, bestLoss))
+                if (loss > prevLoss) throw new Exception("Loss went up");
+                if (!approxEqual((float)loss, bestLoss))
                 {
                     throw new Exception("Weight calculation wrong");
                 }
 #endif
             }
 
-            return bestLoss;
+            prevLoss = (float)loss;
+            return (float)loss;
         }
 
         private bool approxEqual(float l, float r)
@@ -123,6 +123,7 @@ namespace AdaBoost
         private Object bestLock = new Object();
         private KeyValuePair<Layer<Sample>, float[]>? bestLearner;
         private float bestLoss = float.PositiveInfinity;
+        private float prevLoss = float.PositiveInfinity;
 
         private float getLoss(float coefTrue, float coefFalse, IEnumerable<Tuple<float,bool>> predictions, float target)
         {
@@ -139,8 +140,6 @@ namespace AdaBoost
         private float sumWeights(TrainingSample<Sample>[] samples)
         {
             float sum = 0;
-
-            Array.Sort(samples, (l, r) => l.weight.CompareTo(r.weight));
 
             for (int i = 0; i < samples.Length; i++)
             {
