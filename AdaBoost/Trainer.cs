@@ -109,10 +109,9 @@ namespace AdaBoost
                     throw new Exception("Weight calculation wrong");
                 }
 #endif
+                prevLoss = (float)loss;
             }
-
-            prevLoss = (float)loss;
-            return (float)loss;
+            return prevLoss;
         }
 
         private bool approxEqual(float l, float r)
