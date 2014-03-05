@@ -214,9 +214,15 @@ namespace ConsoleTrainer
                                 break;
                             }
 
-                            Console.WriteLine("Loss = " + (float)cost);
+                            //Console.WriteLine("Loss = " + (float)cost);
                             int testErrors = testTrainer(t.getClassifier(), pointsPos, pointsNeg, test, testTask);
                             int veriErrors = testTrainer(t.getClassifier(), veri, veriTask);
+
+                            if (prev == 0 && testErrors > 0)
+                            {
+                                ;
+                            }
+
                             if (testErrors == 0) convergence++;
                             else convergence = 0;
                             if (convergence > 19)

@@ -36,7 +36,7 @@ namespace AdaBoost
         /// <param name="loss">A loss function, used to choose the best weak learner at each stage.</param>
         public Trainer(IEnumerable<ILearner<Sample>> learners, List<Sample> positiveSamples, List<Sample> negativeSamples)
         {
-            this.learners = learners.AsEnumerable();
+            this.learners = learners.ToArray();
             float count = positiveSamples.Count + negativeSamples.Count;
             this.positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<Sample>(s, i, 1f/count, 1f))).ToArray();
             int offset = positiveSamples.Count;
@@ -57,7 +57,7 @@ namespace AdaBoost
 
         private Classifier<Sample> classifier;
 
-        IEnumerable<ILearner<Sample>> learners;
+        ILearner<Sample>[] learners;
 
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace AdaBoost
                 bestConfiguration(learner);
             }
 
-            learners = learners.Reverse();
+            Array.Reverse(learners);
 
             if (this.bestLearner.HasValue)
             {
@@ -83,35 +83,33 @@ namespace AdaBoost
 
                 classifier.addLayer(layer);
 
-                float oldWeight = 0, newWeight = 0;
+                float oldLoss = 0, newLoss = 0;
 
                 //Add new layer's output to each learner's cumulative score, recalculate weight, find highest weight
                 for (int j = 0; j < positiveSamples.Length; j++)
                 {
-                    oldWeight += (float)Math.Exp(-positiveSamples[j].confidence);
+                    oldLoss += (float)Math.Exp(-positiveSamples[j].confidence);
                     positiveSamples[j].addConfidence(outputs[positiveSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
                     positiveSamples[j].weight = (float)Math.Exp(-positiveSamples[j].confidence);
-                    newWeight += positiveSamples[j].weight;
+                    newLoss += positiveSamples[j].weight;
                     j++;
                 }
                 for (int j = 0; j < negativeSamples.Length; j++)
                 {
-                    oldWeight += (float)Math.Exp(negativeSamples[j].confidence);
+                    oldLoss += (float)Math.Exp(negativeSamples[j].confidence);
                     negativeSamples[j].addConfidence(outputs[negativeSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
                     negativeSamples[j].weight = (float)Math.Exp(negativeSamples[j].confidence);
-                    newWeight += negativeSamples[j].weight;
+                    newLoss += negativeSamples[j].weight;
                     j++;
                 }
 
-#if DEBU
-                if (!approxEqual(newWeight / oldWeight, bestLoss))
+#if DEBUG
+                if (newLoss > oldLoss) throw new Exception("Loss went up");
+                if (!approxEqual(newLoss, bestLoss))
                 {
                     throw new Exception("Weight calculation wrong");
                 }
 #endif
-
-                //Normalize weights
-                reWeight();
             }
 
             return bestLoss;
@@ -119,21 +117,7 @@ namespace AdaBoost
 
         private bool approxEqual(float l, float r)
         {
-            return (l + l / 10) > r && (l - l / 10) < r;
-        }
-
-        private void reWeight()
-        {
-            float sum = sumWeights(positiveSamples) + sumWeights(negativeSamples);
-
-            for (int i = 0; i < positiveSamples.Length; i++)
-            {
-                positiveSamples[i].weight /= sum;
-            }
-            for (int i = 0; i < negativeSamples.Length; i++)
-            {
-                negativeSamples[i].weight /= sum;
-            }
+            return (l + l / 64) > r && (l - l / 64) < r;
         }
 
         private Object bestLock = new Object();
