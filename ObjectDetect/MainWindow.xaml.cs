@@ -25,50 +25,59 @@ namespace ObjectDetect
             InitializeComponent();
         }
 
-        public static readonly DependencyProperty rectLeftProperty = Canvas.LeftProperty;
-        public static readonly DependencyProperty rectTopProperty = Canvas.TopProperty;
+        private readonly DependencyProperty rectLeftProperty = Canvas.LeftProperty;
+        private readonly DependencyProperty rectTopProperty = Canvas.TopProperty;
+
+        private int fileIndex;
+        private List<Tuple<Uri, ImageSample[]>> fileList;
 
         private async void MenuItem_Click_Open(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.OpenFileDialog();
             if (dialog.ShowDialog() ?? false) {
-                var fileList = await Task.Run(() => FileAccess.loadInfo(dialog.FileName));
+                fileList = await Task.Run(() => FileAccess.loadInfo(dialog.FileName));
                 if (fileList.Count() == 0) return;
 
-                var image = await Task.Run(() =>
-                {
-                    var im = new BitmapImage(fileList.First().Item1);
-                    im.Freeze();
-                    return im;
-                });
+                fileIndex = 0;
+                Canvas_Load_Image(fileIndex);
+            }
+        }
 
-                double scaleX = 96 / image.DpiX;
-                double scaleY = 96 / image.DpiY;
+        private async void Canvas_Load_Image(int index)
+        {
+            var image = await Task.Run(() =>
+            {
+                var im = new BitmapImage(fileList[index].Item1);
+                im.Freeze();
+                return im;
+            });
 
-                var bg = new ImageBrush();
-                bg.ImageSource = image;
+            double scaleX = 96 / image.DpiX;
+            double scaleY = 96 / image.DpiY;
 
-                Title = fileList.First().Item1 + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
+            var bg = new ImageBrush();
+            bg.ImageSource = image;
 
-                canvas.Background = bg;
-                canvas.Width = bg.ImageSource.Width;
-                canvas.Height = bg.ImageSource.Height;
-                canvas.Children.Clear();
+            Title = fileList[index].Item1 + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
 
-                foreach (ImageSample sample in fileList.First().Item2)
-                {
-                    var rectangle = new Rectangle();
+            canvas.Background = bg;
+            canvas.Width = bg.ImageSource.Width;
+            canvas.Height = bg.ImageSource.Height;
+            canvas.Children.Clear();
 
-                    rectangle.SetValue(rectLeftProperty, sample.Left * scaleX);
-                    rectangle.SetValue(rectTopProperty, sample.Top * scaleY);
-                    rectangle.Width = sample.Width * scaleX;
-                    rectangle.Height = sample.Height * scaleY;
+            foreach (ImageSample sample in fileList[index].Item2)
+            {
+                var rectangle = new Rectangle();
 
-                    rectangle.Stroke = Brushes.AliceBlue;
-                    rectangle.StrokeThickness = 3;
+                rectangle.SetValue(rectLeftProperty, sample.Left * scaleX);
+                rectangle.SetValue(rectTopProperty, sample.Top * scaleY);
+                rectangle.Width = sample.Width * scaleX;
+                rectangle.Height = sample.Height * scaleY;
 
-                    canvas.Children.Add(rectangle);
-                }
+                rectangle.Stroke = Brushes.AliceBlue;
+                rectangle.StrokeThickness = 3;
+
+                canvas.Children.Add(rectangle);
             }
         }
 
@@ -87,6 +96,33 @@ namespace ObjectDetect
             canvas.LayoutTransform = scale;
 
             e.Handled = true;
+        }
+
+        private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                fileIndex++;
+            }
+            else if (e.ChangedButton == MouseButton.Right)
+            {
+                fileIndex--;
+            }
+
+            if (fileIndex < 0)
+            {
+                fileIndex = 0;
+            }
+            else if (fileIndex < fileList.Count)
+            {
+                Canvas_Load_Image(fileIndex);
+            }
+            else
+            {
+                fileIndex = fileList.Count;
+                canvas.Children.Clear();
+                canvas.Background = Brushes.SkyBlue;
+            }
         }
     }
 }

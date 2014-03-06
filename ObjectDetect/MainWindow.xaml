@@ -12,7 +12,7 @@
         </Menu>
         
         <ScrollViewer Height="auto" Width="auto" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-            <Canvas Height="auto" Width="auto" Name="canvas" MouseWheel="canvas_MouseWheel" />
+            <Canvas Height="auto" Width="auto" Name="canvas" MouseWheel="canvas_MouseWheel" MouseDown="Canvas_MouseDown" />
         </ScrollViewer>
     </DockPanel>
 </Window>
