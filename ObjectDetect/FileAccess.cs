@@ -16,6 +16,9 @@ namespace ObjectDetect
             int smallestRect = int.MaxValue;
             int largestRect = int.MinValue;
 
+            float smallestRatio = float.PositiveInfinity;
+            float largestRatio = float.NegativeInfinity;
+
             using (var dataFile = new StreamReader(dataFileName))
             {
                 Uri directory = new Uri(Path.GetDirectoryName(dataFileName) + Path.DirectorySeparatorChar);
@@ -41,7 +44,7 @@ namespace ObjectDetect
                     bool success = int.TryParse(words[1], out numSamples);
                     if (!success)
                     {
-                        Console.WriteLine("info.dat: syntax error on line " + lineNo);
+                        Console.WriteLine(Path.GetFileName(dataFileName) + ": syntax error on line " + lineNo);
                         continue;
                     }
 
@@ -64,8 +67,14 @@ namespace ObjectDetect
                             break;
                         }
 
+                        var ratio = (float)w / h;
+                        ratio = ratio > 1 ? ratio : 1 / ratio;
+
+                        smallestRatio = Math.Min(ratio, smallestRatio);
+                        largestRatio = Math.Max(ratio, largestRatio);
+
                         smallestRect = Math.Min(Math.Max(w, h), smallestRect);
-                        largestRect = Math.Max(Math.Min(w, h), largestRect);
+                        largestRect = Math.Max(Math.Max(w, h), largestRect);
 
                         samples[i] = new ImageSample(file, x, y, w, h);
                     }
