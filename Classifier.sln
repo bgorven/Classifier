@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdaBoost", "AdaBoost\AdaBoo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectDetect", "ObjectDetect\ObjectDetect.csproj", "{8CC62106-2016-45C6-8114-FF4EF381C417}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject", "UnitTestProject\UnitTestProject.csproj", "{FAC7B448-302B-40F3-8705-55D186E0F0EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{8CC62106-2016-45C6-8114-FF4EF381C417}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CC62106-2016-45C6-8114-FF4EF381C417}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CC62106-2016-45C6-8114-FF4EF381C417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAC7B448-302B-40F3-8705-55D186E0F0EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAC7B448-302B-40F3-8705-55D186E0F0EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAC7B448-302B-40F3-8705-55D186E0F0EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAC7B448-302B-40F3-8705-55D186E0F0EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

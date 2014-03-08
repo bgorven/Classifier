@@ -7,7 +7,7 @@ using System.IO;
 
 namespace ObjectDetect
 {
-    class FileAccess
+    public class FileAccess
     {
         public static List<Tuple<Uri, ImageSample[]>> loadInfo(string dataFileName)
         {

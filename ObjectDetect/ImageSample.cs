@@ -7,7 +7,7 @@ using AdaBoost;
 
 namespace ObjectDetect
 {
-    struct ImageSample : ISample
+    public struct ImageSample : ISample
     {
         public Uri file;
 
@@ -30,6 +30,33 @@ namespace ObjectDetect
             this.y = top;
             this.w = width;
             this.h = height;
+        }
+
+        private bool filesProbablyEqual(ImageSample other)
+        {
+            var retval = System.IO.File.Exists(file.AbsolutePath) && System.IO.File.Exists(other.file.AbsolutePath);
+            retval &= System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath));
+            retval &= System.IO.File.GetCreationTime(file.AbsolutePath).Equals(System.IO.File.GetCreationTime(other.file.AbsolutePath));
+            return retval;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ImageSample)) return false;
+            var other = (ImageSample)obj;
+
+            return x == other.x && y == other.y && w == other.w && h == other.h && filesProbablyEqual(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return x ^ y ^ w ^ h ^ System.IO.Path.GetFileName(file.AbsolutePath).GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            //"ImageSample C:\path\to\file.jpg [x,y] wxh"
+            return "ImageSample " + file.AbsolutePath + " [" + x + "," + y + "] " + w + "x" + h;
         }
     }
 }
