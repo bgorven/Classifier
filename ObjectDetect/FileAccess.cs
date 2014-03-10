@@ -13,79 +13,59 @@ namespace ObjectDetect
         {
             List<Tuple<Uri, ImageSample[]>> fileNames = new List<Tuple<Uri, ImageSample[]>>();
 
-            int smallestRect = int.MaxValue;
-            int largestRect = int.MinValue;
-
-            float smallestRatio = float.PositiveInfinity;
-            float largestRatio = float.NegativeInfinity;
-
-            using (var dataFile = new StreamReader(dataFileName))
+            try
             {
-                Uri directory = new Uri(Path.GetDirectoryName(dataFileName) + Path.DirectorySeparatorChar);
-                Uri file = null;
-
-                int lineNo = -1;
-                for (string line = dataFile.ReadLine(); line != null; line = dataFile.ReadLine())
+                using (var dataFile = new StreamReader(dataFileName))
                 {
-                    lineNo++;
-                    var words = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
-                    if (words.Length < 2) continue;
-                    else
+                    Uri directory = new Uri(Path.GetDirectoryName(dataFileName) + Path.DirectorySeparatorChar);
+                    Uri file = null;
+
+                    int lineNo = -1;
+                    for (string line = dataFile.ReadLine(); line != null; line = dataFile.ReadLine())
                     {
-                        file = new Uri(directory, words[0]);
-                        if (!System.IO.File.Exists(file.AbsolutePath))
+                        lineNo++;
+                        var words = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                        if (words.Length < 2) continue;
+                        else
                         {
-                            var result = System.Windows.MessageBox.Show("\"" + words[0] + "\" not found in \"" + directory.AbsolutePath + "\"", file.AbsolutePath + " Not Found", System.Windows.MessageBoxButton.OKCancel);
-                            if (result == System.Windows.MessageBoxResult.Cancel) return fileNames;
-                        }
-                    }
-
-                    int numSamples;
-                    bool success = int.TryParse(words[1], out numSamples);
-                    if (!success)
-                    {
-                        Console.WriteLine(Path.GetFileName(dataFileName) + ": syntax error on line " + lineNo);
-                        continue;
-                    }
-
-                    var samples = new ImageSample[numSamples];
-                    int next = 2;
-                    for (int i = 0; i < numSamples; i++)
-                    {
-                        int x;
-                        success |= int.TryParse(words[next++], out x);
-                        int y;
-                        success |= int.TryParse(words[next++], out y);
-                        int w;
-                        success |= int.TryParse(words[next++], out w);
-                        int h;
-                        success |= int.TryParse(words[next++], out h);
-
-                        if (!success)
-                        {
-                            Console.WriteLine(Path.GetFileName(dataFileName) + ": syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
-                            break;
+                            file = new Uri(directory, words[0]);
+                            if (!System.IO.File.Exists(file.AbsolutePath))
+                            {
+                                var result = System.Windows.MessageBox.Show("\"" + words[0] + "\" not found in \"" + directory.AbsolutePath + "\"", file.AbsolutePath + " Not Found", System.Windows.MessageBoxButton.OKCancel);
+                                if (result == System.Windows.MessageBoxResult.Cancel) return fileNames;
+                            }
                         }
 
-                        var ratio = (float)w / h;
-                        ratio = ratio > 1 ? ratio : 1 / ratio;
+                        int numSamples;
+                        if (!int.TryParse(words[1], out numSamples))
+                        {
+                            throw new Exception("syntax error on line " + lineNo);
+                        }
 
-                        smallestRatio = Math.Min(ratio, smallestRatio);
-                        largestRatio = Math.Max(ratio, largestRatio);
+                        var samples = new ImageSample[numSamples];
+                        for (int i = 0; i < numSamples; i++)
+                        {
+                            const int xbase = 2, ybase = 3, wbase = 4, hbase = 5;
+                            int x, y, w, h;
+                            if (! int.TryParse(words[xbase + i * 4], out x)
+                                & int.TryParse(words[ybase + i * 4], out y)
+                                & int.TryParse(words[wbase + i * 4], out w)
+                                & int.TryParse(words[hbase + i * 4], out h))
+                            {
+                                throw new Exception("syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
+                            }
 
-                        smallestRect = Math.Min(Math.Max(w, h), smallestRect);
-                        largestRect = Math.Max(Math.Max(w, h), largestRect);
+                            samples[i] = new ImageSample(file, x, y, w, h);
+                        }
 
-                        samples[i] = new ImageSample(file, x, y, w, h);
+                        fileNames.Add(new Tuple<Uri, ImageSample[]>(file, samples));
                     }
-                    if (!success) continue;
-
-                    fileNames.Add(new Tuple<Uri, ImageSample[]>(file, samples));
                 }
             }
-
-            List<ImageSample> positives = new List<ImageSample>();
-            List<ImageSample> negatives = new List<ImageSample>();
+            catch (Exception e)
+            {
+                throw new Exception(dataFileName + ": " + e.Message);
+            }
 
             return fileNames;
         }
