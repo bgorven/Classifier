@@ -52,7 +52,9 @@ namespace UnitTestProject
                 Assert.AreEqual(actual.Item1, expected.Item1, actual + " " + expected);
                 foreach (var _ in actual.Item2.Zip(expected.Item2, (a, e) =>
                 {
-                    Assert.AreEqual(a, e, a + " " + e); return a;
+                    Assert.AreEqual(a, e, a + " " + e);
+                    Assert.IsTrue(a.fileProbablyEquals(e));
+                    return a;
                 })) ;
                 return actual;
             }));

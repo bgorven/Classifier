@@ -32,12 +32,11 @@ namespace ObjectDetect
             this.h = height;
         }
 
-        private bool filesProbablyEqual(ImageSample other)
+        public bool fileProbablyEquals(ImageSample other)
         {
-            var retval = System.IO.File.Exists(file.AbsolutePath) && System.IO.File.Exists(other.file.AbsolutePath);
-            retval &= System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath));
-            retval &= System.IO.File.GetCreationTime(file.AbsolutePath).Equals(System.IO.File.GetCreationTime(other.file.AbsolutePath));
-            return retval;
+            return System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath)) && 
+                System.IO.File.Exists(file.AbsolutePath) && System.IO.File.Exists(other.file.AbsolutePath) && 
+                System.IO.File.GetCreationTime(file.AbsolutePath).Equals(System.IO.File.GetCreationTime(other.file.AbsolutePath));
         }
 
         public override bool Equals(object obj)
@@ -45,7 +44,7 @@ namespace ObjectDetect
             if (!(obj is ImageSample)) return false;
             var other = (ImageSample)obj;
 
-            return x == other.x && y == other.y && w == other.w && h == other.h && filesProbablyEqual(other);
+            return x == other.x && y == other.y && w == other.w && h == other.h && System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath));
         }
 
         public override int GetHashCode()
