@@ -42,7 +42,6 @@
   <ItemGroup>
     <Compile Include="Classifier.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="fixed_point.cs" />
     <Compile Include="ILearner.cs" />
     <Compile Include="ISample.cs" />
     <Compile Include="KahanSum.cs" />

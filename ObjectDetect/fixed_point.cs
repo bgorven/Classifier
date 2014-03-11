@@ -4,21 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AdaBoost
+namespace ObjectDetect
 {
     public struct fixed_point
     {
         private const int BINARY_PLACES_AFTER_POINT = 16;
-        private long value;
+        private readonly long value;
 
         private fixed_point(long value)
         {
             this.value = value;
         }
 
-        public static explicit operator double(fixed_point val)
+        public static implicit operator double(fixed_point val)
         {
-            return val.value / Math.Pow(2, BINARY_PLACES_AFTER_POINT);
+            return val.value / (double)(1 << BINARY_PLACES_AFTER_POINT);
         }
 
         public static implicit operator fixed_point(int val)
@@ -28,7 +28,7 @@ namespace AdaBoost
 
         public static explicit operator fixed_point(double val)
         {
-            return new fixed_point(checked((long)(val * Math.Pow(2, BINARY_PLACES_AFTER_POINT))));
+            return new fixed_point(checked((long)(val * (1 << BINARY_PLACES_AFTER_POINT))));
         }
 
         public static fixed_point operator /(fixed_point number, fixed_point divisor)
@@ -83,7 +83,7 @@ namespace AdaBoost
 
         public int Round()
         {
-            return (int)Math.Round((double)this);
+            return (int)Math.Round((double)this, MidpointRounding.AwayFromZero);
         }
 
         public override string ToString()
