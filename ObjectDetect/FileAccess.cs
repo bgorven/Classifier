@@ -47,10 +47,10 @@ namespace ObjectDetect
                         {
                             const int xbase = 2, ybase = 3, wbase = 4, hbase = 5;
                             int x, y, w, h;
-                            if (! int.TryParse(words[xbase + i * 4], out x)
+                            if (!(int.TryParse(words[xbase + i * 4], out x)
                                 & int.TryParse(words[ybase + i * 4], out y)
                                 & int.TryParse(words[wbase + i * 4], out w)
-                                & int.TryParse(words[hbase + i * 4], out h))
+                                & int.TryParse(words[hbase + i * 4], out h)))
                             {
                                 throw new Exception("syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
                             }
