@@ -29,7 +29,7 @@ namespace ObjectDetect
         private readonly DependencyProperty rectTopProperty = Canvas.TopProperty;
 
         private int fileIndex;
-        private List<Tuple<Uri, ImageSample[]>> fileList;
+        private List<Tuple<Uri, rectangle[]>> fileList;
 
         private async void MenuItem_Click_Open(object sender, RoutedEventArgs e)
         {
@@ -65,7 +65,7 @@ namespace ObjectDetect
             canvas.Height = bg.ImageSource.Height;
             canvas.Children.Clear();
 
-            foreach (ImageSample sample in fileList[index].Item2)
+            foreach (var sample in fileList[index].Item2)
             {
                 var rectangle = new Rectangle();
 

@@ -17,7 +17,7 @@ namespace UnitTestProject
 
             Uri[] filenames = { new Uri(tempFileUri, "asdf"), new Uri(tempFileUri, "asfd"), new Uri(tempFileUri, "zxbq") };
             
-            var expectedResult = new System.Collections.Generic.List<Tuple<Uri, ObjectDetect.ImageSample[]>>();
+            var expectedResult = new System.Collections.Generic.List<Tuple<Uri, ObjectDetect.rectangle[]>>();
 
             using (var tempFile = new System.IO.StreamWriter(tempFileName))
             {
@@ -26,13 +26,13 @@ namespace UnitTestProject
                     using (System.IO.File.Create(filename.AbsolutePath)) { };
 
                     var numBoxes = rand.Next(30);
-                    var boxes = new System.Collections.Generic.List<ObjectDetect.ImageSample>();
+                    var boxes = new System.Collections.Generic.List<ObjectDetect.rectangle>();
 
                     tempFile.Write(filename.AbsolutePath + " " + numBoxes);
 
                     for (int i = numBoxes; i > 0; i--)
                     {
-                        var box = new ObjectDetect.ImageSample(filename, rand.Next(2000), rand.Next(2000), rand.Next(2000), rand.Next(2000));
+                        var box = new ObjectDetect.rectangle(rand.Next(2000), rand.Next(2000), rand.Next(2000), rand.Next(2000));
 
                         boxes.Add(box);
 
@@ -53,7 +53,6 @@ namespace UnitTestProject
                 foreach (var _ in actual.Item2.Zip(expected.Item2, (a, e) =>
                 {
                     Assert.AreEqual(a, e, a + " " + e);
-                    Assert.IsTrue(a.fileProbablyEquals(e));
                     return a;
                 })) ;
                 return actual;

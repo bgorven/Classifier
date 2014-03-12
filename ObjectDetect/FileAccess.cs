@@ -9,9 +9,9 @@ namespace ObjectDetect
 {
     public class FileAccess
     {
-        public static List<Tuple<Uri, ImageSample[]>> loadInfo(string dataFileName)
+        public static List<Tuple<Uri, rectangle[]>> loadInfo(string dataFileName)
         {
-            List<Tuple<Uri, ImageSample[]>> fileNames = new List<Tuple<Uri, ImageSample[]>>();
+            List<Tuple<Uri, rectangle[]>> fileNames = new List<Tuple<Uri, rectangle[]>>();
 
             try
             {
@@ -42,7 +42,7 @@ namespace ObjectDetect
                             throw new Exception("syntax error on line " + lineNo);
                         }
 
-                        var samples = new ImageSample[numSamples];
+                        var samples = new rectangle[numSamples];
                         for (int i = 0; i < numSamples; i++)
                         {
                             const int xbase = 2, ybase = 3, wbase = 4, hbase = 5;
@@ -55,10 +55,10 @@ namespace ObjectDetect
                                 throw new Exception("syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
                             }
 
-                            samples[i] = new ImageSample(file, x, y, w, h);
+                            samples[i] = new rectangle(x, y, w, h);
                         }
 
-                        fileNames.Add(new Tuple<Uri, ImageSample[]>(file, samples));
+                        fileNames.Add(new Tuple<Uri, rectangle[]>(file, samples));
                     }
                 }
             }
