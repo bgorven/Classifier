@@ -9,6 +9,7 @@ namespace ObjectDetect
 {
     public class FileAccess
     {
+        public const int smallestWindow = 64, biggestWindow = 512, windowStep = 3, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
         public static List<Tuple<Uri, rectangle[]>> loadInfo(string dataFileName)
         {
             List<Tuple<Uri, rectangle[]>> fileNames = new List<Tuple<Uri, rectangle[]>>();
@@ -19,6 +20,7 @@ namespace ObjectDetect
                 {
                     Uri directory = new Uri(Path.GetDirectoryName(dataFileName) + Path.DirectorySeparatorChar);
                     Uri file = null;
+                    SlidingWindow imageWindow = new SlidingWindow(imageWidth, imageHeight, smallestWindow, biggestWindow, windowStep, offsetStep);
 
                     int lineNo = -1;
                     for (string line = dataFile.ReadLine(); line != null; line = dataFile.ReadLine())
@@ -54,8 +56,11 @@ namespace ObjectDetect
                             {
                                 throw new Exception("syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
                             }
-
-                            samples[i] = new rectangle(x, y, w, h);
+                            double xd, yd, wd, hd;
+                            if (imageWindow.getWindowDimensions(imageWindow.getNearestWindow(x, y, w, h), out xd, out yd, out wd, out hd))
+                            {
+                                samples[i] = new rectangle(xd, yd, wd, hd);
+                            }
                         }
 
                         fileNames.Add(new Tuple<Uri, rectangle[]>(file, samples));

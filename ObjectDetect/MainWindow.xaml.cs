@@ -25,10 +25,7 @@ namespace ObjectDetect
             InitializeComponent();
         }
 
-        private readonly DependencyProperty rectLeftProperty = Canvas.LeftProperty;
-        private readonly DependencyProperty rectTopProperty = Canvas.TopProperty;
-
-        private int fileIndex;
+        private int fileIndex = 0, rectangleIndex = 0;
         private List<Tuple<Uri, rectangle[]>> fileList;
 
         private async void MenuItem_Click_Open(object sender, RoutedEventArgs e)
@@ -43,41 +40,55 @@ namespace ObjectDetect
             }
         }
 
-        private async void Canvas_Load_Image(int index)
+        private void Canvas_Focus_Rectangle(int imageIndex, int rectIndex)
+        {
+            canvas.LayoutTransform = ScaleTransform.Identity;
+            canvas.Children.Clear();
+
+            var rect = fileList[imageIndex].Item2[rectIndex];
+            canvas.Children.Add(rect.initializeShape(new Rectangle(), scaleX, scaleY));
+            canvas.Children.Add(rect.initializeShape(new Ellipse(), scaleX, scaleY));
+
+            scroller.ScrollToHorizontalOffset(Math.Max(rect.x - 32, 0) * scaleX);
+            scroller.ScrollToVerticalOffset(Math.Max(rect.y - 32, 0) * scaleY);
+        }
+
+        double scaleX, scaleY;
+
+        private async void Canvas_Load_Image(int imageIndex)
         {
             var image = await Task.Run(() =>
             {
-                var im = new BitmapImage(fileList[index].Item1);
+                var im = new BitmapImage(fileList[imageIndex].Item1);
                 im.Freeze();
                 return im;
             });
 
-            double scaleX = 96 / image.DpiX;
-            double scaleY = 96 / image.DpiY;
+            scaleX = 96 / image.DpiX;
+            scaleY = 96 / image.DpiY;
+
+            if (image.PixelWidth != FileAccess.imageWidth || image.PixelHeight != FileAccess.imageHeight) throw new Exception();
 
             var bg = new ImageBrush();
             bg.ImageSource = image;
 
-            Title = fileList[index].Item1 + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
+            Title = fileList[imageIndex].Item1 + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
 
             canvas.Background = bg;
             canvas.Width = bg.ImageSource.Width;
             canvas.Height = bg.ImageSource.Height;
+
+            Keyboard.Focus(canvas);
+        }
+
+        private void Canvas_Load_Rectangles(int imageIndex)
+        {
+
             canvas.Children.Clear();
 
-            foreach (var sample in fileList[index].Item2)
+            foreach (var sample in fileList[imageIndex].Item2)
             {
-                var rectangle = new Rectangle();
-
-                rectangle.SetValue(rectLeftProperty, sample.Left * scaleX);
-                rectangle.SetValue(rectTopProperty, sample.Top * scaleY);
-                rectangle.Width = sample.Width * scaleX;
-                rectangle.Height = sample.Height * scaleY;
-
-                rectangle.Stroke = Brushes.AliceBlue;
-                rectangle.StrokeThickness = 3;
-
-                canvas.Children.Add(rectangle);
+                canvas.Children.Add(sample.initializeShape(new Rectangle(), scaleX, scaleY));
             }
         }
 
@@ -116,6 +127,7 @@ namespace ObjectDetect
             else if (fileIndex < fileList.Count)
             {
                 Canvas_Load_Image(fileIndex);
+                Canvas_Load_Rectangles(fileIndex);
             }
             else
             {
@@ -123,6 +135,72 @@ namespace ObjectDetect
                 canvas.Children.Clear();
                 canvas.Background = Brushes.SkyBlue;
             }
+        }
+
+        private void Canvas_KeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = true;
+            switch (e.Key)
+            {
+                case Key.Back:
+                    rectangleIndex--;
+                    if (rectangleIndex < 0)
+                    {
+                        fileIndex--;
+                        if (fileIndex < 0)
+                        {
+                            fileIndex = 0;
+                            rectangleIndex = 0;
+                        }
+                        else
+                        {
+                            rectangleIndex = fileList[fileIndex].Item2.Length - 1;
+                        }
+                        Canvas_Load_Image(fileIndex);
+                    }
+                    break;
+                case Key.Space:
+                    rectangleIndex++;
+                    if (rectangleIndex >= fileList[fileIndex].Item2.Length)
+                    {
+                        fileIndex++;
+                        if (fileIndex >= fileList.Count)
+                        {
+                            fileIndex = fileList.Count - 1;
+                            rectangleIndex = fileList[fileIndex].Item2.Length - 1;
+                        }
+                        else
+                        {
+                            rectangleIndex = 0;
+                        }
+                        Canvas_Load_Image(fileIndex);
+                    }
+                    break;
+                case Key.Left:
+                    fileList[fileIndex].Item2[rectangleIndex].Left--;
+                    break;
+                case Key.Right:
+                    fileList[fileIndex].Item2[rectangleIndex].Left++;
+                    break;
+                case Key.Up:
+                    fileList[fileIndex].Item2[rectangleIndex].Top--;
+                    break;
+                case Key.Down:
+                    fileList[fileIndex].Item2[rectangleIndex].Top++;
+                    break;
+                case Key.W:
+                    fileList[fileIndex].Item2[rectangleIndex].Width++;
+                    fileList[fileIndex].Item2[rectangleIndex].Height++;
+                    break;
+                case Key.S:
+                    fileList[fileIndex].Item2[rectangleIndex].Width--;
+                    fileList[fileIndex].Item2[rectangleIndex].Height--;
+                    break;
+                default:
+                    e.Handled = false;
+                    break;
+            }
+            Canvas_Focus_Rectangle(fileIndex, rectangleIndex);
         }
     }
 }
