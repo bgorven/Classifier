@@ -1,7 +1,8 @@
-﻿<Window x:Name="keyboard" x:Class="ObjectDetect.MainWindow"
+﻿<Window x:Name="closing" x:Class="ObjectDetect.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="525"
+        Closing="Window_Closing">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTestProject
@@ -8,7 +9,7 @@ namespace UnitTestProject
     public class FileAccessTest
     {
         [TestMethod]
-        public void loadInfoTestMethod()
+        public async Task loadInfoTestMethod()
         {
             Random rand = new Random(24);
 
@@ -45,7 +46,7 @@ namespace UnitTestProject
                 }
             }
 
-            var result = ObjectDetect.FileAccess.loadInfo(tempFileName);
+            var result = await ObjectDetect.FileAccess.loadInfo(tempFileName);
 
             foreach (var _ in result.Zip(expectedResult, (actual, expected) =>
             {

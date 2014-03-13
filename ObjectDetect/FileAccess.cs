@@ -9,10 +9,10 @@ namespace ObjectDetect
 {
     public class FileAccess
     {
-        public const int smallestWindow = 64, biggestWindow = 512, windowStep = 3, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
-        public static List<Tuple<Uri, rectangle[]>> loadInfo(string dataFileName)
+        public const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
+        public static async Task<List<Tuple<Uri, rectangle[]>>> loadInfo(string dataFileName)
         {
-            List<Tuple<Uri, rectangle[]>> fileNames = new List<Tuple<Uri, rectangle[]>>();
+            List<Tuple<Uri, rectangle[]>> fileList = new List<Tuple<Uri, rectangle[]>>();
 
             try
             {
@@ -23,7 +23,7 @@ namespace ObjectDetect
                     SlidingWindow imageWindow = new SlidingWindow(imageWidth, imageHeight, smallestWindow, biggestWindow, windowStep, offsetStep);
 
                     int lineNo = -1;
-                    for (string line = dataFile.ReadLine(); line != null; line = dataFile.ReadLine())
+                    for (string line = await dataFile.ReadLineAsync(); line != null; line = await dataFile.ReadLineAsync())
                     {
                         lineNo++;
                         var words = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
@@ -34,7 +34,7 @@ namespace ObjectDetect
                             if (!System.IO.File.Exists(file.AbsolutePath))
                             {
                                 var result = System.Windows.MessageBox.Show("\"" + words[0] + "\" not found in \"" + directory.AbsolutePath + "\"", file.AbsolutePath + " Not Found", System.Windows.MessageBoxButton.OKCancel);
-                                if (result == System.Windows.MessageBoxResult.Cancel) return fileNames;
+                                if (result == System.Windows.MessageBoxResult.Cancel) return fileList;
                             }
                         }
 
@@ -45,6 +45,7 @@ namespace ObjectDetect
                         }
 
                         var samples = new rectangle[numSamples];
+
                         for (int i = 0; i < numSamples; i++)
                         {
                             const int xbase = 2, ybase = 3, wbase = 4, hbase = 5;
@@ -56,14 +57,15 @@ namespace ObjectDetect
                             {
                                 throw new Exception("syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
                             }
-                            double xd, yd, wd, hd;
-                            if (imageWindow.getWindowDimensions(imageWindow.getNearestWindow(x, y, w, h), out xd, out yd, out wd, out hd))
-                            {
-                                samples[i] = new rectangle(xd, yd, wd, hd);
-                            }
+                            samples[i] = new rectangle(x, y, w, h);
+                            //double xd, yd, wd, hd;
+                            //if (imageWindow.getWindowDimensions(imageWindow.getNearestWindow(x, y, w, h), out xd, out yd, out wd, out hd))
+                            //{
+                            //    samples[i] = new rectangle(xd, yd, wd, hd);
+                            //}
                         }
 
-                        fileNames.Add(new Tuple<Uri, rectangle[]>(file, samples));
+                        fileList.Add(new Tuple<Uri, rectangle[]>(file, samples));
                     }
                 }
             }
@@ -72,7 +74,34 @@ namespace ObjectDetect
                 throw new Exception(dataFileName + ": " + e.Message);
             }
 
-            return fileNames;
+            return fileList;
+        }
+
+        const int rectStringWidth = 20;
+        public static async Task saveInfo(string dataFileName, List<Tuple<Uri, rectangle[]>> fileList)
+        {
+            using (var dataFile = new StreamWriter(dataFileName))
+            {
+                int maxFilenameLength = 0;
+                foreach (var line in fileList)
+                {
+                    maxFilenameLength = Math.Max(maxFilenameLength, Path.GetFileName(line.Item1.AbsoluteUri).Length);
+                }
+
+                int padding = (maxFilenameLength / rectStringWidth + 1) * rectStringWidth;
+
+                foreach (var line in fileList)
+                {
+                    await dataFile.WriteAsync(Path.GetFileName(line.Item1.AbsoluteUri).PadRight(padding) + line.Item2.Length.ToString().PadRight(rectStringWidth));
+
+                    foreach (var rect in line.Item2)
+                    {
+                        await dataFile.WriteAsync((rect.Left + " " + rect.Top + " " + rect.Width + " " + rect.Height).PadRight(rectStringWidth));
+                    }
+
+                    await dataFile.WriteLineAsync();
+                }
+            }
         }
     }
 }

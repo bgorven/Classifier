@@ -13,10 +13,10 @@ namespace ObjectDetect
 
         public float x, y, w, h;
 
-        public int Left { get { return (int)x; } set { x = value; } }
-        public int Top { get { return (int)y; } set { y = value; } }
-        public int Width { get { return (int)w; } set { w = value; } }
-        public int Height { get { return (int)h; } set { h = value; } }
+        public int Left { get { return (int)Math.Ceiling(x); } set { x = value; } }
+        public int Top { get { return (int)Math.Ceiling(y); } set { y = value; } }
+        public int Width { get { return (int)Math.Floor(w); } set { w = value; } }
+        public int Height { get { return (int)Math.Floor(h); } set { h = value; } }
 
         public rectangle(int x, int y, int w, int h)
         {
@@ -39,8 +39,8 @@ namespace ObjectDetect
             shape.Width = w * scaleX;
             shape.Height = h * scaleY;
 
-            shape.Stroke = System.Windows.Media.Brushes.AliceBlue;
-            shape.StrokeThickness = 3;
+            shape.Stroke = System.Windows.Media.Brushes.RoyalBlue;
+            shape.StrokeThickness = 2;
 
             return shape;
         }
