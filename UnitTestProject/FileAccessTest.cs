@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTestProject
@@ -18,7 +19,7 @@ namespace UnitTestProject
 
             Uri[] filenames = { new Uri(tempFileUri, "asdf"), new Uri(tempFileUri, "asfd"), new Uri(tempFileUri, "zxbq") };
             
-            var expectedResult = new System.Collections.Generic.List<Tuple<Uri, ObjectDetect.rectangle[]>>();
+            var expectedResult = new List<ObjectDetect.FileAccess.Pair>();
 
             using (var tempFile = new System.IO.StreamWriter(tempFileName))
             {
@@ -40,7 +41,7 @@ namespace UnitTestProject
                         tempFile.Write((" " + box.Left + " " + box.Top + " " + box.Width + " " + box.Height).PadRight(20));
                     }
 
-                    expectedResult.Add(Tuple.Create(filename, boxes.ToArray()));
+                    expectedResult.Add(new ObjectDetect.FileAccess.Pair(filename, boxes));
 
                     tempFile.WriteLine();
                 }
@@ -50,8 +51,8 @@ namespace UnitTestProject
 
             foreach (var _ in result.Zip(expectedResult, (actual, expected) =>
             {
-                Assert.AreEqual(actual.Item1, expected.Item1, actual + " " + expected);
-                foreach (var _ in actual.Item2.Zip(expected.Item2, (a, e) =>
+                Assert.AreEqual(actual.File, expected.File, actual + " " + expected);
+                foreach (var _ in actual.Rectangles.Zip(expected.Rectangles, (a, e) =>
                 {
                     Assert.AreEqual(a, e, a + " " + e);
                     return a;

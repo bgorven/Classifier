@@ -9,10 +9,22 @@ namespace ObjectDetect
 {
     public class FileAccess
     {
-        public const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
-        public static async Task<List<Tuple<Uri, rectangle[]>>> loadInfo(string dataFileName)
+        public struct Pair
         {
-            List<Tuple<Uri, rectangle[]>> fileList = new List<Tuple<Uri, rectangle[]>>();
+            public readonly Uri File;
+            public readonly List<rectangle> Rectangles;
+
+            public Pair(Uri file, List<rectangle> rectangles)
+            {
+                File = file;
+                Rectangles = rectangles;
+            }
+        }
+
+        //public const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
+        public static async Task<List<Pair>> loadInfo(string dataFileName)
+        {
+            List<Pair> fileList = new List<Pair>();
 
             try
             {
@@ -20,7 +32,7 @@ namespace ObjectDetect
                 {
                     Uri directory = new Uri(Path.GetDirectoryName(dataFileName) + Path.DirectorySeparatorChar);
                     Uri file = null;
-                    SlidingWindow imageWindow = new SlidingWindow(imageWidth, imageHeight, smallestWindow, biggestWindow, windowStep, offsetStep);
+                    //SlidingWindow imageWindow = new SlidingWindow(imageWidth, imageHeight, smallestWindow, biggestWindow, windowStep, offsetStep);
 
                     int lineNo = -1;
                     for (string line = await dataFile.ReadLineAsync(); line != null; line = await dataFile.ReadLineAsync())
@@ -44,7 +56,7 @@ namespace ObjectDetect
                             throw new Exception("syntax error on line " + lineNo);
                         }
 
-                        var samples = new rectangle[numSamples];
+                        var samples = new List<rectangle>(numSamples);
 
                         for (int i = 0; i < numSamples; i++)
                         {
@@ -57,7 +69,7 @@ namespace ObjectDetect
                             {
                                 throw new Exception("syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
                             }
-                            samples[i] = new rectangle(x, y, w, h);
+                            samples.Add(new rectangle(x, y, w, h));
                             //double xd, yd, wd, hd;
                             //if (imageWindow.getWindowDimensions(imageWindow.getNearestWindow(x, y, w, h), out xd, out yd, out wd, out hd))
                             //{
@@ -65,7 +77,7 @@ namespace ObjectDetect
                             //}
                         }
 
-                        fileList.Add(new Tuple<Uri, rectangle[]>(file, samples));
+                        fileList.Add(new Pair(file, samples));
                     }
                 }
             }
@@ -78,23 +90,23 @@ namespace ObjectDetect
         }
 
         const int rectStringWidth = 20;
-        public static async Task saveInfo(string dataFileName, List<Tuple<Uri, rectangle[]>> fileList)
+        public static async Task saveInfo(string dataFileName, List<Pair> fileList)
         {
             using (var dataFile = new StreamWriter(dataFileName))
             {
                 int maxFilenameLength = 0;
                 foreach (var line in fileList)
                 {
-                    maxFilenameLength = Math.Max(maxFilenameLength, Path.GetFileName(line.Item1.AbsoluteUri).Length);
+                    maxFilenameLength = Math.Max(maxFilenameLength, Path.GetFileName(line.File.AbsoluteUri).Length);
                 }
 
                 int padding = (maxFilenameLength / rectStringWidth + 1) * rectStringWidth;
 
                 foreach (var line in fileList)
                 {
-                    await dataFile.WriteAsync(Path.GetFileName(line.Item1.AbsoluteUri).PadRight(padding) + line.Item2.Length.ToString().PadRight(rectStringWidth));
+                    await dataFile.WriteAsync(Path.GetFileName(line.File.AbsoluteUri).PadRight(padding) + line.Rectangles.Count.ToString().PadRight(rectStringWidth));
 
-                    foreach (var rect in line.Item2)
+                    foreach (var rect in line.Rectangles)
                     {
                         await dataFile.WriteAsync((rect.Left + " " + rect.Top + " " + rect.Width + " " + rect.Height).PadRight(rectStringWidth));
                     }

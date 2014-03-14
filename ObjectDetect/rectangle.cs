@@ -8,9 +8,6 @@ namespace ObjectDetect
 {
     public struct rectangle
     {
-        private static readonly System.Windows.DependencyProperty rectLeftProperty = System.Windows.Controls.Canvas.LeftProperty;
-        private static readonly System.Windows.DependencyProperty rectTopProperty = System.Windows.Controls.Canvas.TopProperty;
-
         public float x, y, w, h;
 
         public int Left { get { return (int)Math.Ceiling(x); } set { x = value; } }
@@ -31,18 +28,6 @@ namespace ObjectDetect
             this.y = (float)y;
             this.w = (float)w;
             this.h = (float)h;
-        }
-        public System.Windows.Shapes.Shape initializeShape(System.Windows.Shapes.Shape shape, double scaleX, double scaleY)
-        {
-            shape.SetValue(rectLeftProperty, x * scaleX);
-            shape.SetValue(rectTopProperty, y * scaleY);
-            shape.Width = w * scaleX;
-            shape.Height = h * scaleY;
-
-            shape.Stroke = System.Windows.Media.Brushes.RoyalBlue;
-            shape.StrokeThickness = 2;
-
-            return shape;
         }
     }
 }
