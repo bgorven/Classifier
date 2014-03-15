@@ -8,7 +8,7 @@ namespace ObjectDetect
 {
     public struct rectangle
     {
-        public float x, y, w, h;
+        public fixed_point x, y, w, h;
 
         public int Left { get { return (int)Math.Ceiling(x); } set { x = value; } }
         public int Top { get { return (int)Math.Ceiling(y); } set { y = value; } }
@@ -24,10 +24,10 @@ namespace ObjectDetect
         }
         public rectangle(double x, double y, double w, double h)
         {
-            this.x = (float)x;
-            this.y = (float)y;
-            this.w = (float)w;
-            this.h = (float)h;
+            this.x = (fixed_point)x;
+            this.y = (fixed_point)y;
+            this.w = (fixed_point)w;
+            this.h = (fixed_point)h;
         }
     }
 }

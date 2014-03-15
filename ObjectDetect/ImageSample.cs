@@ -9,27 +9,19 @@ namespace ObjectDetect
 {
     public struct ImageSample : ISample
     {
-        public Uri file;
+        public readonly Uri file;
+        public readonly rectangle location;
 
-        private int x;
-        public int Left { get { return x; } set { x = value; } }
-
-        private int y;
-        public int Top { get { return y; } set { y = value; } }
-
-        private int w;
-        public int Width { get { return w; } set { w = value; } }
-
-        private int h;
-        public int Height { get { return h; } set { h = value; } }
+        public ImageSample(Uri file, rectangle location)
+        {
+            this.file = file;
+            this.location = location;
+        }
 
         public ImageSample(Uri file, int left, int top, int width, int height)
         {
             this.file = file;
-            this.x = left;
-            this.y = top;
-            this.w = width;
-            this.h = height;
+            this.location = new rectangle(left, top, width, height);
         }
 
         public bool fileProbablyEquals(ImageSample other)
@@ -44,18 +36,18 @@ namespace ObjectDetect
             if (!(obj is ImageSample)) return false;
             var other = (ImageSample)obj;
 
-            return x == other.x && y == other.y && w == other.w && h == other.h && System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath));
+            return location.Equals(other.location) && System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath));
         }
 
         public override int GetHashCode()
         {
-            return x ^ y ^ w ^ h ^ System.IO.Path.GetFileName(file.AbsolutePath).GetHashCode();
+            return location.GetHashCode() ^ System.IO.Path.GetFileName(file.AbsolutePath).GetHashCode();
         }
 
         public override string ToString()
         {
             //"ImageSample C:\path\to\file.jpg [x,y] wxh"
-            return "ImageSample " + file.AbsolutePath + " [" + x + "," + y + "] " + w + "x" + h;
+            return "ImageSample " + file.AbsolutePath + " [" + location.x + "," + location.y + "] " + location.w + "x" + location.h;
         }
     }
 }

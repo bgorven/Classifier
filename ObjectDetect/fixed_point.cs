@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ObjectDetect
 {
-    public struct fixed_point
+    public class fixed_point
     {
         private const int BINARY_PLACES_AFTER_POINT = 16;
         private readonly long value;
@@ -29,6 +29,21 @@ namespace ObjectDetect
         public static explicit operator fixed_point(double val)
         {
             return new fixed_point(checked((long)(val * (1 << BINARY_PLACES_AFTER_POINT))));
+        }
+
+        public static bool operator ==(fixed_point left, fixed_point right)
+        {
+            return left.value == right.value;
+        }
+
+        public static bool operator !=(fixed_point left, fixed_point right)
+        {
+            return left.value != right.value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj is fixed_point) && value == ((fixed_point)obj).value;
         }
 
         public static fixed_point operator /(fixed_point number, fixed_point divisor)
@@ -89,6 +104,16 @@ namespace ObjectDetect
         public override string ToString()
         {
             return ((double)this).ToString("F4");
+        }
+
+        public static fixed_point Max(fixed_point left, fixed_point right)
+        {
+            return left > right ? left : right;
+        }
+
+        public static fixed_point Min(fixed_point left, fixed_point right)
+        {
+            return left > right ? right : left;
         }
     }
 }

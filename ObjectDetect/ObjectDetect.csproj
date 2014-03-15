@@ -53,6 +53,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ImageSample.cs" />
     <Compile Include="MainWindow_Helpers.cs" />
     <Compile Include="fixed_point.cs" />
     <Compile Include="rectangle.cs" />
@@ -97,6 +98,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AdaBoost\AdaBoost.csproj">
+      <Project>{6bf722af-c800-426a-8c5f-9692fbd80dcc}</Project>
+      <Name>AdaBoost</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

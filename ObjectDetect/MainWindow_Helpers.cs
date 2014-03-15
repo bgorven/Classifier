@@ -214,17 +214,17 @@ namespace ObjectDetect
             if (canvas.Background is ImageBrush && ((ImageBrush)canvas.Background).ImageSource is BitmapImage)
             {
                 var image = (BitmapImage)((ImageBrush)canvas.Background).ImageSource;
-                rect.x = Math.Min(Math.Max(rect.x, 0), image.PixelWidth - 1);
-                rect.w = Math.Min(rect.w, image.PixelWidth - rect.x - 1);
-                rect.y = Math.Min(Math.Max(rect.y, 0), image.PixelHeight - 1);
-                rect.h = Math.Min(rect.h, image.PixelHeight - rect.y - 1);
-                rect.h = rect.w = Math.Min(rect.w, rect.h);
+                rect.x = fixed_point.Min(fixed_point.Max(rect.x, 0), image.PixelWidth - 1);
+                rect.w = fixed_point.Min(rect.w, image.PixelWidth - rect.x - 1);
+                rect.y = fixed_point.Min(fixed_point.Max(rect.y, 0), image.PixelHeight - 1);
+                rect.h = fixed_point.Min(rect.h, image.PixelHeight - rect.y - 1);
+                rect.h = rect.w = fixed_point.Min(rect.w, rect.h);
             }
             else
             {
-                rect.x = Math.Max(rect.x, 0);
-                rect.y = Math.Max(rect.y, 0);
-                rect.h = rect.w = Math.Min(rect.h, rect.w);
+                rect.x = fixed_point.Max(rect.x, 0);
+                rect.y = fixed_point.Max(rect.y, 0);
+                rect.h = rect.w = fixed_point.Min(rect.h, rect.w);
             }
             return rect;
         }
