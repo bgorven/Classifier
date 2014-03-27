@@ -24,7 +24,7 @@ namespace ObjectDetect
         private static readonly DependencyProperty rectTopProperty = System.Windows.Controls.Canvas.TopProperty;
 
         private int fileIndex = 0, rectangleIndex = 0;
-        private List<FileAccess.Pair> fileList;
+        private List<FileAccess.FileEntry> fileList;
         private const string dataFileExt = ".dat";
         private const string dataFileFilter = "datafiles (.dat)|*.dat";
         private bool unsavedChangesPresent = false;
@@ -98,7 +98,7 @@ namespace ObjectDetect
         {
             var image = await Task.Run(delegate
             {
-                var im = new BitmapImage(fileList[imageIndex].File);
+                var im = new BitmapImage(new Uri(fileList[imageIndex].FileName));
                 im.Freeze();
                 return im;
             });
@@ -111,7 +111,7 @@ namespace ObjectDetect
             var bg = new ImageBrush();
             bg.ImageSource = image;
 
-            Title = System.IO.Path.GetFileName(fileList[imageIndex].File.AbsoluteUri) + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
+            Title = System.IO.Path.GetFileName(fileList[imageIndex].FileName) + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
 
             canvas.Background = bg;
             canvas.Width = bg.ImageSource.Width;

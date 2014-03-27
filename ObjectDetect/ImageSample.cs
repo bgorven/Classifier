@@ -7,28 +7,30 @@ using AdaBoost;
 
 namespace ObjectDetect
 {
-    public struct ImageSample : ISample
+    public class ImageSample : ISample
     {
-        public readonly Uri file;
-        public readonly rectangle location;
+        public readonly string fileName;
+        public readonly int windowIndex;
+        public readonly SlidingWindow windowManager;
+        public rectangle location { get { return windowManager.getRectangle(windowIndex); } }
+        public int scale { get { return windowManager.getScale(windowIndex); } }
+        public int pixelCount { get { return windowManager.getOffsetStepsPerWindow(); } }
 
-        public ImageSample(Uri file, rectangle location)
+        public ImageSample(string fileName, int windowIndex, SlidingWindow windowManager)
         {
-            this.file = file;
-            this.location = location;
+            this.fileName = fileName;
+            this.windowIndex = windowIndex;
+            this.windowManager = windowManager;
         }
 
-        public ImageSample(Uri file, int left, int top, int width, int height)
+        public fixed_point getZoomLevelAtScale(int scale)
         {
-            this.file = file;
-            this.location = new rectangle(left, top, width, height);
+            return windowManager.getZoomLevelAtScale(scale);
         }
 
-        public bool fileProbablyEquals(ImageSample other)
+        public bool fileEquals(ImageSample other)
         {
-            return System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath)) && 
-                System.IO.File.Exists(file.AbsolutePath) && System.IO.File.Exists(other.file.AbsolutePath) && 
-                System.IO.File.GetCreationTime(file.AbsolutePath).Equals(System.IO.File.GetCreationTime(other.file.AbsolutePath));
+            return fileName.Equals(other.fileName);
         }
 
         public override bool Equals(object obj)
@@ -36,18 +38,18 @@ namespace ObjectDetect
             if (!(obj is ImageSample)) return false;
             var other = (ImageSample)obj;
 
-            return location.Equals(other.location) && System.IO.Path.GetFileName(file.AbsolutePath).Equals(System.IO.Path.GetFileName(other.file.AbsolutePath));
+            return location.Equals(other.location) && fileName.Equals(other.fileName);
         }
 
         public override int GetHashCode()
         {
-            return location.GetHashCode() ^ System.IO.Path.GetFileName(file.AbsolutePath).GetHashCode();
+            return location.GetHashCode() ^ fileName.GetHashCode();
         }
 
         public override string ToString()
         {
             //"ImageSample C:\path\to\file.jpg [x,y] wxh"
-            return "ImageSample " + file.AbsolutePath + " [" + location.x + "," + location.y + "] " + location.w + "x" + location.h;
+            return "ImageSample " + fileName + " [" + location.x + "," + location.y + "] " + location.w + "x" + location.h;
         }
     }
 }

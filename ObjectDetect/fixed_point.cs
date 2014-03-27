@@ -46,6 +46,11 @@ namespace ObjectDetect
             return (obj is fixed_point) && value == ((fixed_point)obj).value;
         }
 
+        public override int GetHashCode()
+        {
+            return value.GetHashCode();
+        }
+
         public static fixed_point operator /(fixed_point number, fixed_point divisor)
         {
             return new fixed_point(checked((number.value << BINARY_PLACES_AFTER_POINT) / divisor.value));

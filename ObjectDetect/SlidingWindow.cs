@@ -34,6 +34,11 @@ namespace ObjectDetect
             this.offsetExp = offsetStepSize;
         }
 
+        public int getOffsetStepsPerWindow()
+        {
+            return 1 << offsetExp;
+        }
+
         public int getNearestWindow(int x, int y, int width, int height)
         {
             //precise center point
@@ -60,8 +65,24 @@ namespace ObjectDetect
 
         public bool getWindowDimensions(int index, out double x, out double y, out double w, out double h)
         {
-            x = 0; y = 0; w = 0; ; h = 0;
-            if (index < 0) return false;
+            try
+            {
+                var rect = getRectangle(index);
+                x = rect.x;
+                y = rect.y;
+                w = rect.w;
+                h = rect.h;
+                return w < szMax && h < szMax;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                x = y = w = h = 0;
+                return false;
+            }
+        }
+        public rectangle getRectangle(int index)
+        {
+            if (index < 0) throw new ArgumentOutOfRangeException();
             int index_range = 0;
             foreach (var winSz in winSizes())
             {
@@ -76,13 +97,13 @@ namespace ObjectDetect
 
                 var offset = winSz >> offsetExp;
 
-                x = offset * xIndex;
-                y = offset * yIndex;
-                w = winSz;
-                h = winSz;
-                return true;
+                var x = offset * xIndex;
+                var y = offset * yIndex;
+                var w = winSz;
+                var h = winSz;
+                return new rectangle(x, y, w, h);
             }
-            return false;
+            throw new ArgumentOutOfRangeException();
         }
 
         private fixed_point winSize(int size)
@@ -102,7 +123,6 @@ namespace ObjectDetect
             while (sz < Math.Min(w,h))
             {
                 yield return sz;
-                if (sz.Floor() > szMax) yield break;
                 int multiplier = (1 << szExp) + 1;
                 //int divisor = 1 << stepExp;
                 sz = (sz * multiplier) >> szExp;
@@ -146,6 +166,29 @@ namespace ObjectDetect
             if (location > lowBound) return false;
             if (location + winSz < highBound) return false;
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+ 	         return w ^ h ^ szMin ^ szMax ^ szExp ^ offsetExp;
+        }
+
+        internal int getScale(int index)
+        {
+            if (index < 0) throw new ArgumentOutOfRangeException();
+            int scale = 0, index_range = 0;
+            foreach (var winSz in winSizes())
+            {
+                index_range += getNumWindows(winSz);
+                if (index_range > index) return scale;
+                scale++;
+            }
+            throw new ArgumentOutOfRangeException();
+        }
+
+        internal fixed_point getZoomLevelAtScale(int scale)
+        {
+            return winSizes().ElementAt(scale) >> offsetExp;
         }
     }
 }
