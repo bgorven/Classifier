@@ -15,12 +15,11 @@ namespace AdaBoost
     /// <typeparam name="Sample">The type of sample to be classified.</typeparam>
     public class Trainer<Sample> where Sample : ISample
     {
-        const float coefLimit = 2;
 
         /// <summary>
         /// Gets the classifier in its current state.
         /// </summary>
-        /// <returns>A copy of the current state of the classifier bieng trained.</returns>
+        /// <returns>A copy of the current state of the classifier being trained.</returns>
         public Classifier<Sample> getClassifier()
         {
             return classifier;
@@ -164,7 +163,7 @@ namespace AdaBoost
         private void bestConfiguration(ILearner<Sample> learner)
         {
             string cacheKey = "<" + cacheIndex + ">" + learner.getUniqueIDString();
-            Dictionary<Configuration<ILearner<Sample>, Sample>, float[]> predictions = cache[cacheKey] as Dictionary<Configuration<ILearner<Sample>, Sample>, float[]>;
+            Dictionary<string, float[]> predictions = cache[cacheKey] as Dictionary<string, float[]>;
 
             if (predictions == null)
             {
@@ -176,27 +175,27 @@ namespace AdaBoost
             Parallel.ForEach(
                 predictions,
                 () => new LayerHolder(float.PositiveInfinity, null, null),
-                (p, s, best) => bestLayerSetup(learner, p.Key, p.Value, best),
+                (p, s, best) => bestLayerSetup(learner.withParams(p.Key), p.Value, best),
                 setBest
             );
         }
 
-        private Dictionary<Configuration<ILearner<Sample>, Sample>, float[]> getPredictions(ILearner<Sample> learner)
+        private Dictionary<string, float[]> getPredictions(ILearner<Sample> learner)
         {
-            var predictions = new Dictionary<Configuration<ILearner<Sample>, Sample>, float[]>();
+            var predictions = new Dictionary<string, float[]>();
 
             foreach (var s in positiveSamples.Concat(negativeSamples))
             {
                 learner.setSample(s.sample);
-                foreach (Configuration<ILearner<Sample>, Sample> config in learner.getPossibleParams())
+                foreach (var config in learner.getPossibleParams())
                 {
                     if (!predictions.ContainsKey(config))
                     {
                         predictions.Add(config, new float[positiveSamples.Length + negativeSamples.Length]);
                     }
-                    learner.setParams(config);
+                    var temp = learner.withParams(config);
 
-                    predictions[config][s.index] = (float)learner.classify();
+                    predictions[config][s.index] = temp.classify();
                 }
             }
             return predictions;
@@ -228,9 +227,9 @@ namespace AdaBoost
             }
         }
 
-        private LayerHolder bestLayerSetup(ILearner<Sample> learner, Configuration<ILearner<Sample>, Sample> configuration, float[] predictions, LayerHolder best)
+        private LayerHolder bestLayerSetup(ILearner<Sample> learner, float[] predictions, LayerHolder best)
         {
-            LayerHolder result = optimizeCoefficients(learner, configuration, predictions);
+            LayerHolder result = optimizeCoefficients(learner, predictions);
 
 #if DEBUG
             if (float.IsInfinity(result.loss))
@@ -244,7 +243,7 @@ namespace AdaBoost
             return best;
         }
 
-        private LayerHolder optimizeCoefficients(ILearner<Sample> learner, Configuration<ILearner<Sample>, Sample> configuration, float[] outputs)
+        private LayerHolder optimizeCoefficients(ILearner<Sample> learner, float[] outputs)
         {
             float[] positiveWeights = positiveSamples.Select(s => s.weight).ToArray();
             float[] negativeWeights = negativeSamples.Select(s => s.weight).ToArray();
@@ -254,7 +253,6 @@ namespace AdaBoost
 
 #if DEBUG
             bool perfect = true;
-            learner.setParams(configuration);
             foreach (var s in positiveSamples.Concat(negativeSamples))
             {
                 learner.setSample(s.sample);
@@ -306,7 +304,7 @@ namespace AdaBoost
                 {
                     ;
                 }
-                if (!perfect && float.IsInfinity(coefNeg) || float.IsInfinity(coefPos))
+                if (!perfect && (float.IsInfinity(coefNeg) || float.IsInfinity(coefPos)))
                 {
                     throw new Exception("Unexpected coefficients");
                 }
@@ -330,7 +328,7 @@ namespace AdaBoost
                 threshold = next;
             }
 
-            return new LayerHolder(bestCost, new Layer<Sample>(learner, configuration, bestPos, bestNeg, bestThres), outputs);
+            return new LayerHolder(bestCost, new Layer<Sample>(learner, bestPos, bestNeg, bestThres), outputs);
         }
     }
 }

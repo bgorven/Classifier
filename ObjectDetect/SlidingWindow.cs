@@ -63,6 +63,30 @@ namespace ObjectDetect
             return -1;
         }
 
+        public int getNearestWindow(rectangle loc)
+        {
+            //precise center point
+            var centerX = loc.x + loc.w / 2;
+            var centerY = loc.y + loc.h / 2;
+
+            int index_base = 0, next_index_base = 0;
+            foreach (var winSz in winSizes())
+            {
+                index_base = next_index_base;
+                next_index_base = checked(index_base + getNumWindows(winSz));
+
+                var offset = winSz >> offsetExp;
+
+                int xIndex = clamp(getIndex(centerX, winSz, offset), 0, getNumWindows(winSz, this.w) - 1);
+                int yIndex = clamp(getIndex(centerY, winSz, offset), 0, getNumWindows(winSz, this.h) - 1);
+                if (checkContains(xIndex * offset, winSz, loc.x, loc.x + loc.w) && checkContains(yIndex * offset, winSz, loc.y, loc.y + loc.h))
+                {
+                    return checked(index_base + yIndex * getNumWindows(winSz, this.w) + xIndex);
+                }
+            }
+            return -1;
+        }
+
         public bool getWindowDimensions(int index, out double x, out double y, out double w, out double h)
         {
             try
@@ -161,7 +185,7 @@ namespace ObjectDetect
 
         //Note that this is the opposite of normal bounds checking: the region between lowBound and highBound
         //must fit entirely within the region from location to location+width.
-        private bool checkContains(fixed_point location, fixed_point winSz, int lowBound, int highBound)
+        private bool checkContains(fixed_point location, fixed_point winSz, fixed_point lowBound, fixed_point highBound)
         {
             if (location > lowBound) return false;
             if (location + winSz < highBound) return false;

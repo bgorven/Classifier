@@ -28,7 +28,7 @@ namespace ObjectDetect
                 var window = new SlidingWindow(p.Width, p.Height, 128, 512, 4, 7);
                 foreach (var rect in p.Rectangles)
                 {
-                    list.Add(new ImageSample(p.FileName, window.getNearestWindow(rect), window);
+                    list.Add(new ImageSample(p.FileName, window.getNearestWindow(rect), window));
                 }
             }
             return list;

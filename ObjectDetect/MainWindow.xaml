@@ -5,10 +5,15 @@
         Closing="Window_Closing">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File">
-                <MenuItem Header="_Open" Click="MenuItem_Click_Open"/>
-                <MenuItem Header="_Save" Click="MenuItem_Click_Save"/>
-                <Menu Height="100" Width="auto"/>
+            <MenuItem Header="_Dataset">
+                <MenuItem Header="_Open" Click="MenuItem_Dataset_Open"/>
+                <MenuItem Header="_Save" Click="MenuItem_Dataset_Save"/>
+                <Menu Height="auto" Width="auto"/>
+            </MenuItem>
+            <MenuItem Header="_Classifier">
+                <MenuItem Header="_Train" Click="MenuItem_Classifier_Open"/>
+                <MenuItem Header="_Save" Click="MenuItem_Classifier_Save"/>
+                <Menu Height="auto" Width="auto"/>
             </MenuItem>
         </Menu>
         

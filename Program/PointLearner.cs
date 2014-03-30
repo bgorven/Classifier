@@ -7,54 +7,37 @@ using AdaBoost;
 
 namespace ConsoleTrainer
 {
-    class PointLearner : ILearner<Point>
+    struct PointLearner : AdaBoost.ILearner<Point>
     {
-        float ILearner<Point>.classify()
+        private float rotation;
+
+        public float classify()
         {
-            return (float)(Math.Cos(parameters.rotation) * sample.x - Math.Sin(parameters.rotation) * sample.y);
-            
+            return (float)(Math.Cos(rotation) * sample.x - Math.Sin(rotation) * sample.y);
         }
 
         private Point sample;
-        void ILearner<Point>.setSample(Point s)
+        public void setSample(Point s)
         {
             sample = s;
         }
 
-        string ILearner<Point>.getUniqueIDString()
+        public string getUniqueIDString()
         {
             return "PointLearner";
         }
 
-        struct PointLearnerConfig : Configuration<ILearner<Point>, Point>
+        public ILearner<Point> withParams(string parameters)
         {
-            internal float rotation;
-
-            public PointLearnerConfig(float theta)
-            {
-                rotation = theta;
-            }
-
-            public override string ToString()
-            {
-                return "rotation = " + rotation;
-            }
+            var ret = this;
+            float.TryParse(parameters, out ret.rotation);
+            return ret;
         }
 
-        PointLearnerConfig parameters;
-        void ILearner<Point>.setParams(Configuration<ILearner<Point>, Point> parameters)
+        public IEnumerable<string> getPossibleParams()
         {
-            this.parameters = (PointLearnerConfig) parameters;
+            const float delta = 1/128f;
+            for (float theta = 0; theta < Math.PI; theta += delta) yield return theta.ToString();
         }
-
-        IEnumerable<Configuration<ILearner<Point>, Point>> ILearner<Point>.getPossibleParams()
-        {
-            float delta = 1/128f;
-                for (float th = 0; th < Math.PI; th += delta)
-                    yield return new PointLearnerConfig(th);
-            yield break;
-        }
-
-        public int getFeature() { return 0; }
     }
 }

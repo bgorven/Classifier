@@ -25,14 +25,14 @@ namespace ObjectDetect
             InitializeComponent();
         }
 
-        private async void MenuItem_Click_Open(object sender, RoutedEventArgs e)
+        private async void MenuItem_Dataset_Open(object sender, RoutedEventArgs e)
         {
             await Load_File();
             Keyboard.Focus(canvas);
             e.Handled = true;
         }
 
-        private async void MenuItem_Click_Save(object sender, RoutedEventArgs e)
+        private async void MenuItem_Dataset_Save(object sender, RoutedEventArgs e)
         {
             await Save_File();
             Keyboard.Focus(canvas);
@@ -163,6 +163,16 @@ namespace ObjectDetect
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (!Confirm_Discard_Changes()) e.Cancel = true;
+        }
+
+        private void MenuItem_Classifier_Open(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MenuItem_Classifier_Save(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

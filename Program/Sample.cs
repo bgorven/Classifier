@@ -23,11 +23,19 @@ namespace ConsoleTrainer
         public class Learner : ILearner<Sample>
         {
             private int feature;
+            private int numFeatures;
             private Sample sample;
+
+            private Learner(Learner other)
+            {
+                this.feature = other.feature;
+                this.numFeatures = other.numFeatures;
+                this.sample = other.sample;
+            }
 
             public Learner(int feat)
             {
-                feature = feat;
+                numFeatures = feat;
             }
 
             public float classify()
@@ -40,11 +48,19 @@ namespace ConsoleTrainer
                 sample = s;
             }
 
-            public void setParams(Configuration<ILearner<Sample>, Sample> parameters) { }
-
-            public IEnumerable<Configuration<ILearner<Sample>, Sample>> getPossibleParams()
+            public ILearner<Sample> withParams(string parameters)
             {
-                return new Configuration<ILearner<Sample>, Sample>[] { new param() };
+                var ret = new Learner(this);
+                if (!int.TryParse(parameters, out ret.feature)) throw new ArgumentException();
+                return ret;
+            }
+
+            public IEnumerable<string> getPossibleParams()
+            {
+                for (int f = 0; f < numFeatures; f++)
+                {
+                    yield return f.ToString();
+                }
             }
 
             public int getFeature()
@@ -54,15 +70,13 @@ namespace ConsoleTrainer
             
             public string getUniqueIDString()
             {
-                return "Sample.Learner " + feature;
+                return "Sample.Learner";
             }
 
             public override string ToString()
             {
-                return getUniqueIDString();
+                return getUniqueIDString() + " [" + feature + "]";
             }
-
-            public struct param : Configuration<ILearner<Sample>, Sample> { }
         }
     }
 }

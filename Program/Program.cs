@@ -11,6 +11,7 @@ namespace ConsoleTrainer
 {
     class Program
     {
+        private static readonly Random rand = new Random();
 
         static void Main(string[] args)
         {
@@ -24,7 +25,7 @@ namespace ConsoleTrainer
 
                     int flippedLabels = generateSamples(error, out pointsPos, out pointsNeg);
 
-                    Trainer<Sample> t = new Trainer<Sample>(pointsPos[0].getLearnerArray(), pointsPos, pointsNeg);
+                    Trainer<Sample> t = new Trainer<Sample>(new AdaBoost.ILearner<Sample>[] { new Sample.Learner(21) }, pointsPos, pointsNeg);
 
                     int convergence = 0;
                     int prev = 0;
@@ -81,7 +82,6 @@ namespace ConsoleTrainer
 
         private static Sample penalisers(bool pos)
         {
-            Random rand = new Random();
             Sample s = new Sample(21);
             for (int j = 0; j < 11; j++)
             {
@@ -121,7 +121,6 @@ namespace ConsoleTrainer
         private static int addSamples(int count, Func<bool, Sample> featureGenerator, double error, List<Sample> pointsPos, List<Sample> pointsNeg)
         {
             int flippedLabels = 0;
-            Random rand = new Random();
             for (int i = 0; i < count; i++)
             {
                 bool label = rand.NextDouble() < 0.5;

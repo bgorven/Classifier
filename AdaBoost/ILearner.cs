@@ -37,7 +37,7 @@ namespace AdaBoost
         /// </summary>
         /// <param name="parameters">A dictionary of parameters to be parsed according to some
         /// predetermined scheme.</param>
-        void setParams(Configuration<ILearner<Sample>, Sample> parameters);
+        ILearner<Sample> withParams(string parameter);
 
         /// <summary>
         /// For improved performance, the output of this learner may be cached. This method allows the learner
@@ -50,6 +50,6 @@ namespace AdaBoost
         /// During training, it may be desirable to iterate over every possible parameter of the learner.
         /// </summary>
         /// <returns>an iterable object containing every valid parameter combination for the learner.</returns>
-        IEnumerable<Configuration<ILearner<Sample>, Sample>> getPossibleParams();
+        IEnumerable<string> getPossibleParams();
     }
 }
