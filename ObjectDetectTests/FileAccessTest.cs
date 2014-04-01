@@ -40,7 +40,7 @@ namespace ObjectDetectTests
                         tempFile.Write((" " + box.Left + " " + box.Top + " " + box.Width + " " + box.Height).PadRight(20));
                     }
 
-                    expectedResult.Add(new ObjectDetect.FileAccess.FileEntry(filename, boxes, 5184, 3456));
+                    expectedResult.Add(new ObjectDetect.FileAccess.FileEntry(filename, boxes, 5184, 3456, 128, 512, 4, 6));
 
                     tempFile.WriteLine();
                 }

@@ -105,13 +105,13 @@ namespace ObjectDetect
         {
             using (var dataFile = new StreamWriter(dataFileName))
             {
-                int maxFilenameLength = fileList.Select(line => Path.GetFileName(line.FileName).Length).Max();
+                int maxFilenameLength = fileList.Select(line => (Path.GetFileName(line.FileName) ?? "").Length).Max();
 
                 int padding = (maxFilenameLength / rectStringWidth + 1) * rectStringWidth;
 
                 foreach (var line in fileList)
                 {
-                    await dataFile.WriteAsync(Path.GetFileName(line.FileName).PadRight(padding) + line.Rectangles.Count.ToString().PadRight(rectStringWidth));
+                    await dataFile.WriteAsync((Path.GetFileName(line.FileName) ?? "").PadRight(padding) + line.Rectangles.Count.ToString().PadRight(rectStringWidth));
 
                     foreach (var rect in line.Rectangles)
                     {

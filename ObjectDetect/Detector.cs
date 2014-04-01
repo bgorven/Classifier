@@ -8,7 +8,7 @@ namespace ObjectDetect
 {
     class Detector
     {
-        private AdaBoost.Trainer<ImageSample> trainer;
+        private readonly AdaBoost.Trainer<ImageSample> trainer;
 
         public Detector(List<FileAccess.FileEntry> fileList, int numPositive, int numNegative)
         {

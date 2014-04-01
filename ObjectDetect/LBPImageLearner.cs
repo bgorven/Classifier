@@ -49,7 +49,7 @@ namespace ObjectDetect
             internal static Configuration Parse(string configString)
             {
                 var c = configString.Split(',');
-                byte scale = 0, bucket = 0;
+                byte scale, bucket;
                 if (c.Length != 2 || !byte.TryParse(c[0], out scale) || !byte.TryParse(c[1], out bucket))
                 {
                     throw new ArgumentException();
@@ -202,9 +202,7 @@ namespace ObjectDetect
 
         public AdaBoost.ILearner<ImageSample> withParams(string parameters)
         {
-            Configuration newConfig;
-            newConfig = Configuration.Parse(parameters);
-            return new LBPImageLearner(newConfig, this);
+            return new LBPImageLearner(Configuration.Parse(parameters), this);
         }
 
         public string getUniqueIDString()

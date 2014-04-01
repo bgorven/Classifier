@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AdaBoost;
-using Program;
 
-namespace ConsoleTrainer
+namespace Program
 {
     class Program
     {

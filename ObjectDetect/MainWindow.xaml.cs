@@ -156,7 +156,8 @@ namespace ObjectDetect
 
         private void MenuItem_Classifier_Train(object sender, RoutedEventArgs e)
         {
-            Dete
+            var detector = new Detector(fileList, 2000, 2000);
+            detector.Train(2000);
         }
 
         private void MenuItem_Classifier_Save(object sender, RoutedEventArgs e)

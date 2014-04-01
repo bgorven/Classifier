@@ -2,7 +2,7 @@
 
 namespace ObjectDetect
 {
-    public class fixed_point
+    public struct fixed_point
     {
         private const int BINARY_PLACES_AFTER_POINT = 16;
         private readonly long value;
