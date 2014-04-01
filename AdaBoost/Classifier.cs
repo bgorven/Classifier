@@ -6,35 +6,35 @@ namespace AdaBoost
     /// <summary>
     /// A boosted classifier that can operate on the specified type of sample.
     /// </summary>
-    /// <typeparam name="Sample">an implementation of the ISample interface such that learners of type <c>ILearner&lt;Sample&gt;</c>
+    /// <typeparam name="TSample">an implementation of the ISample interface such that learners of type <c>ILearner&lt;Sample&gt;</c>
     /// will be able to classify objects of this type.</typeparam>
-    public class Classifier<Sample> where Sample : ISample
+    public class Classifier<TSample> where TSample : ISample
     {
         /// <summary>
         /// Creates a new classifier with no weak Learners.
         /// </summary>
         public Classifier()
         {
-            layers = new List<Layer<Sample>>();
+            _layers = new List<Layer<TSample>>();
         }
 
         /// <summary>
         /// Creates a new classifier with layers copied from another classifier.
         /// </summary>
         /// <param name="prototype">The classifier to copy.</param>
-        public Classifier(Classifier<Sample> prototype)
+        public Classifier(Classifier<TSample> prototype)
         {
-            layers = new List<Layer<Sample>>(prototype.layers);
+            _layers = new List<Layer<TSample>>(prototype._layers);
         }
 
-        private readonly List<Layer<Sample>> layers;
+        private readonly List<Layer<TSample>> _layers;
 
         /// <summary>
         /// Adds a specific weak learner to the classifier. Typically called at the end of each training iteration.
         /// </summary>
         /// <param name="l">The layer to be added. This will be a weak learner with a specific set of parameters.</param>
-        internal void addLayer(Layer<Sample> l) {
-            layers.Add(l);
+        internal void AddLayer(Layer<TSample> l) {
+            _layers.Add(l);
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace AdaBoost
         /// </summary>
         /// <param name="s">The object to classify.</param>
         /// <returns>The sign of the return value is the prediction, and it's absolute value is the confidence.</returns>
-        public float classify(Sample s) {
-            return classify(s, true);
+        public float Classify(TSample s) {
+            return Classify(s, true);
         }
 
         /// <summary>
@@ -53,11 +53,11 @@ namespace AdaBoost
         /// <param name="canEarlyTerminate">If this value is true, the object will only be tested against enough weak
         /// learners to reach a predetermined confidence level.</param>
         /// <returns>The sign of the return value is the prediction, and it's absolute value is the confidence.</returns>
-        public float classify(Sample s, bool canEarlyTerminate)
+        public float Classify(TSample s, bool canEarlyTerminate)
         {
             float confidence = 0;
-            foreach (Layer<Sample> l in layers) {
-                confidence += l.classify(s);
+            foreach (Layer<TSample> l in _layers) {
+                confidence += l.Classify(s);
                 if (canEarlyTerminate) break;
             }
 
@@ -70,7 +70,7 @@ namespace AdaBoost
         /// <returns></returns>
         public override string ToString()
         {
-            return layers.Aggregate("", (current, l) => current + (l + ";\n"));
+            return _layers.Aggregate("", (current, l) => current + (l + ";\n"));
         }
     }
 }

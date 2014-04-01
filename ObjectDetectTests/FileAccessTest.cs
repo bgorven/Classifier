@@ -10,7 +10,7 @@ namespace ObjectDetectTests
     public class FileAccessTest
     {
         [TestMethod]
-        public async Task loadInfoTestMethod()
+        public async Task LoadInfoTestMethod()
         {
             Random rand = new Random(24);
 
@@ -27,13 +27,13 @@ namespace ObjectDetectTests
                     using (System.IO.File.Create(filename)) { }
 
                     var numBoxes = rand.Next(30);
-                    var boxes = new System.Collections.Generic.List<ObjectDetect.rectangle>();
+                    var boxes = new System.Collections.Generic.List<ObjectDetect.Rectangle>();
 
                     tempFile.Write(filename + " " + numBoxes);
 
                     for (int i = numBoxes; i > 0; i--)
                     {
-                        var box = new ObjectDetect.rectangle(rand.Next(2000), rand.Next(2000), rand.Next(2000), rand.Next(2000));
+                        var box = new ObjectDetect.Rectangle(rand.Next(2000), rand.Next(2000), rand.Next(2000), rand.Next(2000));
 
                         boxes.Add(box);
 
@@ -46,7 +46,7 @@ namespace ObjectDetectTests
                 }
             }
 
-            var result = await ObjectDetect.FileAccess.loadInfo(tempFileName);
+            var result = await ObjectDetect.FileAccess.LoadInfo(tempFileName);
 
             foreach (var _ in result.Zip(expectedResult, (actual, expected) =>
             {

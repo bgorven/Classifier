@@ -1,29 +1,29 @@
 ﻿namespace AdaBoost
 {
-    internal struct TrainingSample<Sample> where Sample : ISample
+    internal struct TrainingSample<TSample> where TSample : ISample
     {
-        public TrainingSample(Sample s, int index, float weight, float actual)
+        public TrainingSample(TSample s, int index, float weight, float actual)
         {
-            this.sample = s;
-            this.weight = weight;
-            this.actual = actual;
-            this.index = index;
+            this.Sample = s;
+            this.Weight = weight;
+            this.Actual = actual;
+            this.Index = index;
             this._confidenceP = new KahanSum();
             this._confidenceN = new KahanSum();
         }
 
-        public Sample sample;
-        public float weight;
-        public float actual;
-        public int index;
+        public TSample Sample;
+        public float Weight;
+        public float Actual;
+        public int Index;
 
         private KahanSum _confidenceP, _confidenceN;
-        public float confidence { get { return _confidenceP.s + _confidenceN.s - _confidenceP.c - _confidenceN.c; } }
+        public float Confidence { get { return _confidenceP.S + _confidenceN.S - _confidenceP.C - _confidenceN.C; } }
 
-        internal void addConfidence(float c)
+        internal void AddConfidence(float c)
         {
-            if (c > 0) _confidenceP.add(c);
-            else _confidenceN.add(c);
+            if (c > 0) _confidenceP.Add(c);
+            else _confidenceN.Add(c);
         }
     }
 }

@@ -7,74 +7,74 @@ namespace Program
 {
     struct Sample : ISample
     {
-        public int[] features;
+        public int[] Features;
 
         public Sample(int feat)
         {
-            features = new int[feat];
+            Features = new int[feat];
         }
 
-        public IEnumerable<Learner> getLearnerArray()
+        public IEnumerable<Learner> GetLearnerArray()
         {
-            return from feat in Enumerable.Range(0, features.Count()) select new Learner(feat);
+            return from feat in Enumerable.Range(0, Features.Count()) select new Learner(feat);
         }
 
         public class Learner : ILearner<Sample>
         {
-            private int feature;
-            private readonly int numFeatures;
-            private Sample sample;
+            private int _feature;
+            private readonly int _numFeatures;
+            private Sample _sample;
 
             private Learner(Learner other)
             {
-                this.feature = other.feature;
-                this.numFeatures = other.numFeatures;
-                this.sample = other.sample;
+                this._feature = other._feature;
+                this._numFeatures = other._numFeatures;
+                this._sample = other._sample;
             }
 
             public Learner(int feat)
             {
-                numFeatures = feat;
+                _numFeatures = feat;
             }
 
-            public float classify()
+            public float Classify()
             {
-                return sample.features[feature];
+                return _sample.Features[_feature];
             }
 
-            public void setSample(Sample s)
+            public void SetSample(Sample s)
             {
-                sample = s;
+                _sample = s;
             }
 
-            public ILearner<Sample> withParams(string parameters)
+            public ILearner<Sample> WithParams(string parameters)
             {
                 var ret = new Learner(this);
-                if (!int.TryParse(parameters, out ret.feature)) throw new ArgumentException();
+                if (!int.TryParse(parameters, out ret._feature)) throw new ArgumentException();
                 return ret;
             }
 
-            public IEnumerable<string> getPossibleParams()
+            public IEnumerable<string> GetPossibleParams()
             {
-                for (int f = 0; f < numFeatures; f++)
+                for (int f = 0; f < _numFeatures; f++)
                 {
                     yield return f.ToString();
                 }
             }
 
-            public int getFeature()
+            public int GetFeature()
             {
-                return feature;
+                return _feature;
             }
             
-            public string getUniqueIDString()
+            public string GetUniqueIdString()
             {
                 return "Sample.Learner";
             }
 
             public override string ToString()
             {
-                return getUniqueIDString() + " [" + feature + "]";
+                return GetUniqueIdString() + " [" + _feature + "]";
             }
         }
     }

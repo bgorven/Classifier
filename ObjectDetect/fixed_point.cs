@@ -2,99 +2,99 @@
 
 namespace ObjectDetect
 {
-    public struct fixed_point
+    public struct FixedPoint
     {
-        private const int BINARY_PLACES_AFTER_POINT = 16;
-        private readonly long value;
+        private const int BinaryPlacesAfterPoint = 16;
+        private readonly long _value;
 
-        private fixed_point(long value)
+        private FixedPoint(long value)
         {
-            this.value = value;
+            this._value = value;
         }
 
-        public static implicit operator double(fixed_point val)
+        public static implicit operator double(FixedPoint val)
         {
-            return val.value / (double)(1 << BINARY_PLACES_AFTER_POINT);
+            return val._value / (double)(1 << BinaryPlacesAfterPoint);
         }
 
-        public static implicit operator fixed_point(int val)
+        public static implicit operator FixedPoint(int val)
         {
-            return new fixed_point((long)val << BINARY_PLACES_AFTER_POINT);
+            return new FixedPoint((long)val << BinaryPlacesAfterPoint);
         }
 
-        public static explicit operator fixed_point(double val)
+        public static explicit operator FixedPoint(double val)
         {
-            return new fixed_point(checked((long)(val * (1 << BINARY_PLACES_AFTER_POINT))));
+            return new FixedPoint(checked((long)(val * (1 << BinaryPlacesAfterPoint))));
         }
 
-        public static bool operator ==(fixed_point left, fixed_point right)
+        public static bool operator ==(FixedPoint left, FixedPoint right)
         {
-            return left.value == right.value;
+            return left._value == right._value;
         }
 
-        public static bool operator !=(fixed_point left, fixed_point right)
+        public static bool operator !=(FixedPoint left, FixedPoint right)
         {
-            return left.value != right.value;
+            return left._value != right._value;
         }
 
         public override bool Equals(object obj)
         {
-            return (obj is fixed_point) && value == ((fixed_point)obj).value;
+            return (obj is FixedPoint) && _value == ((FixedPoint)obj)._value;
         }
 
         public override int GetHashCode()
         {
-            return value.GetHashCode();
+            return _value.GetHashCode();
         }
 
-        public static fixed_point operator /(fixed_point number, fixed_point divisor)
+        public static FixedPoint operator /(FixedPoint number, FixedPoint divisor)
         {
-            return new fixed_point(checked((number.value << BINARY_PLACES_AFTER_POINT) / divisor.value));
+            return new FixedPoint(checked((number._value << BinaryPlacesAfterPoint) / divisor._value));
         }
 
-        public static fixed_point operator -(fixed_point number, fixed_point subtrahend)
+        public static FixedPoint operator -(FixedPoint number, FixedPoint subtrahend)
         {
-            return new fixed_point(checked(number.value - subtrahend.value));
+            return new FixedPoint(checked(number._value - subtrahend._value));
         }
 
-        public static fixed_point operator +(fixed_point number, fixed_point addend)
+        public static FixedPoint operator +(FixedPoint number, FixedPoint addend)
         {
-            return new fixed_point(checked(number.value + addend.value));
+            return new FixedPoint(checked(number._value + addend._value));
         }
 
-        public static fixed_point operator *(fixed_point number, fixed_point factor)
+        public static FixedPoint operator *(FixedPoint number, FixedPoint factor)
         {
-            return new fixed_point(checked((number.value * factor.value) >> BINARY_PLACES_AFTER_POINT));
+            return new FixedPoint(checked((number._value * factor._value) >> BinaryPlacesAfterPoint));
         }
 
-        public static fixed_point operator <<(fixed_point number, int shift)
+        public static FixedPoint operator <<(FixedPoint number, int shift)
         {
-            return new fixed_point(checked(number.value << shift));
+            return new FixedPoint(checked(number._value << shift));
         }
 
-        public static fixed_point operator >>(fixed_point number, int shift)
+        public static FixedPoint operator >>(FixedPoint number, int shift)
         {
-            return new fixed_point(checked(number.value >> shift));
+            return new FixedPoint(checked(number._value >> shift));
         }
 
-        public static bool operator <(fixed_point number, fixed_point other)
+        public static bool operator <(FixedPoint number, FixedPoint other)
         {
-            return number.value < other.value;
+            return number._value < other._value;
         }
 
-        public static bool operator >(fixed_point number, fixed_point other)
+        public static bool operator >(FixedPoint number, FixedPoint other)
         {
-            return number.value > other.value;
+            return number._value > other._value;
         }
 
         public int Ceiling()
         {
-            return checked((int)-(-value >> BINARY_PLACES_AFTER_POINT));
+            return checked((int)-(-_value >> BinaryPlacesAfterPoint));
         }
 
         public int Floor()
         {
-            return checked((int)value >> BINARY_PLACES_AFTER_POINT);
+            return checked((int)_value >> BinaryPlacesAfterPoint);
         }
 
         public int Round()
@@ -107,12 +107,12 @@ namespace ObjectDetect
             return ((double)this).ToString("F4");
         }
 
-        public static fixed_point Max(fixed_point left, fixed_point right)
+        public static FixedPoint Max(FixedPoint left, FixedPoint right)
         {
             return left > right ? left : right;
         }
 
-        public static fixed_point Min(fixed_point left, fixed_point right)
+        public static FixedPoint Min(FixedPoint left, FixedPoint right)
         {
             return left > right ? right : left;
         }

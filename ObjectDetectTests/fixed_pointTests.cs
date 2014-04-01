@@ -4,112 +4,112 @@ using ObjectDetect;
 namespace ObjectDetectTests
 {
     [TestClass]
-    public class fixed_pointTests
+    public class FixedPointTests
     {
 
         [TestMethod]
-        public void operatorDoubleTest()
+        public void OperatorDoubleTest()
         {
-            Assert.AreEqual(3.0, (double)((fixed_point)3.0));
+            Assert.AreEqual(3.0, (double)((FixedPoint)3.0));
         }
 
         [TestMethod]
-        public void operatorIntTest()
+        public void OperatorIntTest()
         {
-            Assert.AreEqual(3.0, (double)((fixed_point)3));
+            Assert.AreEqual(3.0, (double)((FixedPoint)3));
         }
 
         [TestMethod]
-        public void operatorEqaulsTest()
+        public void OperatorEqaulsTest()
         {
-            Assert.IsTrue((fixed_point)3 == (fixed_point)3);
-            Assert.IsFalse((fixed_point)3 == (fixed_point)4);
+            Assert.IsTrue((FixedPoint)3 == (FixedPoint)3);
+            Assert.IsFalse((FixedPoint)3 == (FixedPoint)4);
         }
 
         [TestMethod]
-        public void operatorNotEqaulsTest()
+        public void OperatorNotEqaulsTest()
         {
-            Assert.IsTrue((fixed_point)3 != (fixed_point)4);
-            Assert.IsFalse((fixed_point)3 != (fixed_point)3);
+            Assert.IsTrue((FixedPoint)3 != (FixedPoint)4);
+            Assert.IsFalse((FixedPoint)3 != (FixedPoint)3);
         }
 
         [TestMethod]
-        public void operatorDivideTest()
+        public void OperatorDivideTest()
         {
-            Assert.AreEqual((fixed_point)3 / (fixed_point)2, (fixed_point)1.5);
+            Assert.AreEqual((FixedPoint)3 / (FixedPoint)2, (FixedPoint)1.5);
         }
 
         [TestMethod]
-        public void operatorMinusTest(fixed_point number, fixed_point subtrahend)
+        public void OperatorMinusTest(FixedPoint number, FixedPoint subtrahend)
         {
-            Assert.AreEqual((fixed_point)4 - (fixed_point)3, (fixed_point)1);
+            Assert.AreEqual((FixedPoint)4 - (FixedPoint)3, (FixedPoint)1);
         }
 
         [TestMethod]
-        public void operatorPlusTest()
+        public void OperatorPlusTest()
         {
-            Assert.AreEqual((fixed_point)4 + (fixed_point)3, (fixed_point)7);
+            Assert.AreEqual((FixedPoint)4 + (FixedPoint)3, (FixedPoint)7);
         }
 
         [TestMethod]
-        public void operatorMultTest()
+        public void OperatorMultTest()
         {
-            Assert.AreEqual((fixed_point)4 * (fixed_point)3, (fixed_point)12);
+            Assert.AreEqual((FixedPoint)4 * (FixedPoint)3, (FixedPoint)12);
         }
 
         [TestMethod]
-        public void operatorLShiftTest(fixed_point number, int shift)
+        public void OperatorLShiftTest(FixedPoint number, int shift)
         {
-            Assert.AreEqual((fixed_point)4 << 3, (fixed_point)(4*8));
+            Assert.AreEqual((FixedPoint)4 << 3, (FixedPoint)(4*8));
         }
 
         [TestMethod]
-        public void operatorRShiftTest()
+        public void OperatorRShiftTest()
         {
-            Assert.AreEqual((fixed_point)4 >> 3, (fixed_point)(4.0 / 8.0));
+            Assert.AreEqual((FixedPoint)4 >> 3, (FixedPoint)(4.0 / 8.0));
         }
 
         [TestMethod]
-        public void operatorLTtest()
+        public void OperatorLTtest()
         {
-            Assert.IsTrue((fixed_point)3 < (fixed_point)4);
+            Assert.IsTrue((FixedPoint)3 < (FixedPoint)4);
         }
 
         [TestMethod]
-        public void operatorGTTest()
+        public void OperatorGtTest()
         {
-            Assert.IsTrue((fixed_point)4 > (fixed_point)3);
+            Assert.IsTrue((FixedPoint)4 > (FixedPoint)3);
         }
 
         [TestMethod]
         public void CeilingTest()
         {
-            Assert.AreEqual(((fixed_point)3.5).Ceiling(), 4);
+            Assert.AreEqual(((FixedPoint)3.5).Ceiling(), 4);
         }
 
         [TestMethod]
         public void FloorTest()
         {
-            Assert.AreEqual(((fixed_point)3.5).Floor(), 3);
+            Assert.AreEqual(((FixedPoint)3.5).Floor(), 3);
         }
 
         [TestMethod]
         public void RoundTest()
         {
-            Assert.AreEqual(((fixed_point)3.6).Round(), 4);
-            Assert.AreEqual(((fixed_point)3.4).Round(), 3);
+            Assert.AreEqual(((FixedPoint)3.6).Round(), 4);
+            Assert.AreEqual(((FixedPoint)3.4).Round(), 3);
         }
 
         [TestMethod]
         public void MaxTest()
         {
-            Assert.AreEqual(fixed_point.Max(3, 4), (fixed_point)4);
+            Assert.AreEqual(FixedPoint.Max(3, 4), (FixedPoint)4);
         }
 
         [TestMethod]
         public void MinTest()
         {
-            Assert.AreEqual(fixed_point.Min(3, 4), (fixed_point)3);
+            Assert.AreEqual(FixedPoint.Min(3, 4), (FixedPoint)3);
         }
     }
 }

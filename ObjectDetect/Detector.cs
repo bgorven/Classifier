@@ -8,32 +8,32 @@ namespace ObjectDetect
 {
     class Detector
     {
-        private readonly AdaBoost.Trainer<ImageSample> trainer;
+        private readonly AdaBoost.Trainer<ImageSample> _trainer;
 
         public Detector(List<FileAccess.FileEntry> fileList, int numPositive, int numNegative)
         {
-            var positives = getPositiveSamples(fileList, numPositive).ToList();
+            var positives = GetPositiveSamples(fileList, numPositive).ToList();
             if (numNegative <= 0) numNegative = positives.Count;
-            var negatives = getNegativeSamples(fileList, numNegative).ToList();
+            var negatives = GetNegativeSamples(fileList, numNegative).ToList();
 
-            trainer = new Trainer<ImageSample>(new LBPImageLearner[] { new LBPImageLearner() }, positives, negatives);
+            _trainer = new Trainer<ImageSample>(new LBPImageLearner[] { new LBPImageLearner() }, positives, negatives);
         }
 
         public void Train(int numLayers)
         {
             for (; numLayers > 0; numLayers--)
             {
-                trainer.addLayer();
+                _trainer.AddLayer();
             }
         } 
 
-        internal static IEnumerable<ImageSample> getPositiveSamples(List<FileAccess.FileEntry> fileList, int numPositive)
+        internal static IEnumerable<ImageSample> GetPositiveSamples(List<FileAccess.FileEntry> fileList, int numPositive)
         {
             return (from file in fileList from rect in file.Rectangles 
-                    select new ImageSample(file.FileName, file.Window.getNearestWindow(rect), file.Window));
+                    select new ImageSample(file.FileName, file.Window.GetNearestWindow(rect), file.Window));
         }
 
-        internal static IEnumerable<ImageSample> getNegativeSamples(List<FileAccess.FileEntry> fileList, int numNegative)
+        internal static IEnumerable<ImageSample> GetNegativeSamples(List<FileAccess.FileEntry> fileList, int numNegative)
         {
             throw new NotImplementedException();
         }

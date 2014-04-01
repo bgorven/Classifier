@@ -45,7 +45,6 @@
     <Compile Include="ISample.cs" />
     <Compile Include="KahanSum.cs" />
     <Compile Include="Layer.cs" />
-    <Compile Include="optimize.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Trainer.cs" />
     <Compile Include="TrainingSample.cs" />

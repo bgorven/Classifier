@@ -11,10 +11,10 @@ namespace ObjectDetect
         public class FileEntry
         {
             public readonly string FileName;
-            public readonly List<rectangle> Rectangles;
+            public readonly List<Rectangle> Rectangles;
             public readonly SlidingWindow Window;
 
-            public FileEntry(string file, List<rectangle> rectangles, int width, int height, int startSize, int endSize, int stepSize, int offsetStepSize)
+            public FileEntry(string file, List<Rectangle> rectangles, int width, int height, int startSize, int endSize, int stepSize, int offsetStepSize)
             {
                 FileName = file;
                 Rectangles = rectangles;
@@ -23,7 +23,7 @@ namespace ObjectDetect
         }
 
         //public const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
-        public static async Task<List<FileEntry>> loadInfo(string dataFileName)
+        public static async Task<List<FileEntry>> LoadInfo(string dataFileName)
         {
             List<FileEntry> fileList = new List<FileEntry>();
 
@@ -67,7 +67,7 @@ namespace ObjectDetect
                             throw new Exception("syntax error on line " + lineNo);
                         }
 
-                        var samples = new List<rectangle>(numSamples);
+                        var samples = new List<Rectangle>(numSamples);
 
                         for (int i = 0; i < numSamples; i++)
                         {
@@ -80,7 +80,7 @@ namespace ObjectDetect
                             {
                                 throw new Exception("syntax error on line " + lineNo + ": error reading sample number " + (i + 1));
                             }
-                            samples.Add(new rectangle(x, y, w, h));
+                            samples.Add(new Rectangle(x, y, w, h));
                             //double xd, yd, wd, hd;
                             //if (imageWindow.getWindowDimensions(imageWindow.getNearestWindow(x, y, w, h), out xd, out yd, out wd, out hd))
                             //{
@@ -100,22 +100,22 @@ namespace ObjectDetect
             return fileList;
         }
 
-        const int rectStringWidth = 20;
-        public static async Task saveInfo(string dataFileName, List<FileEntry> fileList)
+        const int RectStringWidth = 20;
+        public static async Task SaveInfo(string dataFileName, List<FileEntry> fileList)
         {
             using (var dataFile = new StreamWriter(dataFileName))
             {
                 int maxFilenameLength = fileList.Select(line => (Path.GetFileName(line.FileName) ?? "").Length).Max();
 
-                int padding = (maxFilenameLength / rectStringWidth + 1) * rectStringWidth;
+                int padding = (maxFilenameLength / RectStringWidth + 1) * RectStringWidth;
 
                 foreach (var line in fileList)
                 {
-                    await dataFile.WriteAsync((Path.GetFileName(line.FileName) ?? "").PadRight(padding) + line.Rectangles.Count.ToString().PadRight(rectStringWidth));
+                    await dataFile.WriteAsync((Path.GetFileName(line.FileName) ?? "").PadRight(padding) + line.Rectangles.Count.ToString().PadRight(RectStringWidth));
 
                     foreach (var rect in line.Rectangles)
                     {
-                        await dataFile.WriteAsync((rect.Left + " " + rect.Top + " " + rect.Width + " " + rect.Height).PadRight(rectStringWidth));
+                        await dataFile.WriteAsync((rect.Left + " " + rect.Top + " " + rect.Width + " " + rect.Height).PadRight(RectStringWidth));
                     }
 
                     await dataFile.WriteLineAsync();

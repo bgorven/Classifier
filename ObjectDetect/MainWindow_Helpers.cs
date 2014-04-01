@@ -16,14 +16,14 @@ namespace ObjectDetect
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static readonly DependencyProperty rectLeftProperty = System.Windows.Controls.Canvas.LeftProperty;
-        private static readonly DependencyProperty rectTopProperty = System.Windows.Controls.Canvas.TopProperty;
+        private static readonly DependencyProperty RectLeftProperty = System.Windows.Controls.Canvas.LeftProperty;
+        private static readonly DependencyProperty RectTopProperty = System.Windows.Controls.Canvas.TopProperty;
 
-        private int fileIndex = 0, rectangleIndex = 0;
-        private List<FileAccess.FileEntry> fileList;
-        private const string dataFileExt = ".dat";
-        private const string dataFileFilter = "datafiles (.dat)|*.dat";
-        private bool unsavedChangesPresent = false;
+        private int _fileIndex = 0, _rectangleIndex = 0;
+        private List<FileAccess.FileEntry> _fileList;
+        private const string DataFileExt = ".dat";
+        private const string DataFileFilter = "datafiles (.dat)|*.dat";
+        private bool _unsavedChangesPresent = false;
 
         private int MinRectSize
         {
@@ -50,19 +50,19 @@ namespace ObjectDetect
             if (!Confirm_Discard_Changes()) return;
 
             var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.DefaultExt = dataFileExt;
-            dialog.Filter = dataFileFilter;
+            dialog.DefaultExt = DataFileExt;
+            dialog.Filter = DataFileFilter;
             if (dialog.ShowDialog() ?? false)
             {
-                fileList = await FileAccess.loadInfo(dialog.FileName);
-                unsavedChangesPresent = false;
-                if (fileList.Count() > 0)
+                _fileList = await FileAccess.LoadInfo(dialog.FileName);
+                _unsavedChangesPresent = false;
+                if (_fileList.Count() > 0)
                 {
-                    fileIndex = 0;
-                    rectangleIndex = 0;
-                    rectangleHasFocus = false;
-                    await Canvas_Load_Image(fileIndex);
-                    Canvas_Load_Rectangles(fileIndex);
+                    _fileIndex = 0;
+                    _rectangleIndex = 0;
+                    _rectangleHasFocus = false;
+                    await Canvas_Load_Image(_fileIndex);
+                    Canvas_Load_Rectangles(_fileIndex);
                 }
             }
         }
@@ -70,132 +70,132 @@ namespace ObjectDetect
         private async Task Save_File()
         {
             var dialog = new Microsoft.Win32.SaveFileDialog();
-            dialog.DefaultExt = dataFileExt;
-            dialog.Filter = dataFileFilter;
+            dialog.DefaultExt = DataFileExt;
+            dialog.Filter = DataFileFilter;
             if (dialog.ShowDialog() ?? false)
             {
-                await FileAccess.saveInfo(dialog.FileName, fileList);
-                unsavedChangesPresent = false;
+                await FileAccess.SaveInfo(dialog.FileName, _fileList);
+                _unsavedChangesPresent = false;
             }
         }
 
         private bool Confirm_Discard_Changes()
         {
-            if (unsavedChangesPresent)
+            if (_unsavedChangesPresent)
             {
                 var result = MessageBox.Show("Discard unsaved changes?", "Datafile Not Saved", MessageBoxButton.YesNo);
-                if (result == MessageBoxResult.Yes) unsavedChangesPresent = false;
+                if (result == MessageBoxResult.Yes) _unsavedChangesPresent = false;
             }
-            return !unsavedChangesPresent;
+            return !_unsavedChangesPresent;
         }
 
         private void Canvas_Focus_Rectangle(int imageIndex, int rectIndex)
         {
-            canvas.LayoutTransform = Transform.Identity;
+            Canvas.LayoutTransform = Transform.Identity;
             Canvas_Load_Rectangles(imageIndex);
 
-            var rect = fileList[imageIndex].Rectangles[rectIndex];
-            canvas.Children.Add(initializeShape(rect, new Rectangle(), scaleX, scaleY, Brushes.RoyalBlue));
-            canvas.Children.Add(initializeShape(rect, new Ellipse(), scaleX, scaleY, Brushes.RoyalBlue));
+            var rect = _fileList[imageIndex].Rectangles[rectIndex];
+            Canvas.Children.Add(InitializeShape(rect, new System.Windows.Shapes.Rectangle(), _scaleX, _scaleY, Brushes.RoyalBlue));
+            Canvas.Children.Add(InitializeShape(rect, new Ellipse(), _scaleX, _scaleY, Brushes.RoyalBlue));
 
-            scroller.ScrollToHorizontalOffset(Math.Max(rect.x - 32, 0) * scaleX);
-            scroller.ScrollToVerticalOffset(Math.Max(rect.y - 32, 0) * scaleY);
+            Scroller.ScrollToHorizontalOffset(Math.Max(rect.X - 32, 0) * _scaleX);
+            Scroller.ScrollToVerticalOffset(Math.Max(rect.Y - 32, 0) * _scaleY);
 
-            Title = "File " + (fileIndex + 1) + "/" + fileList.Count + ", Box " + (rectangleIndex + 1) + "/" + fileList[fileIndex].Rectangles.Count;
-            rectangleHasFocus = true;
+            Title = "File " + (_fileIndex + 1) + "/" + _fileList.Count + ", Box " + (_rectangleIndex + 1) + "/" + _fileList[_fileIndex].Rectangles.Count;
+            _rectangleHasFocus = true;
         }
 
         /// <summary>
         /// On-Screen size == pixel size * scale.
         /// </summary>
-        double scaleX, scaleY;
+        double _scaleX, _scaleY;
 
         private async Task Canvas_Load_Image(int imageIndex)
         {
             var image = await Task.Run(delegate
             {
-                var im = new BitmapImage(new Uri(fileList[imageIndex].FileName));
+                var im = new BitmapImage(new Uri(_fileList[imageIndex].FileName));
                 im.Freeze();
                 return im;
             });
 
-            scaleX = image.Width / image.PixelWidth;
-            scaleY = image.Height / image.PixelHeight;
+            _scaleX = image.Width / image.PixelWidth;
+            _scaleY = image.Height / image.PixelHeight;
 
             //if (image.PixelWidth != FileAccess.imageWidth || image.PixelHeight != FileAccess.imageHeight) throw new Exception();
 
             var bg = new ImageBrush();
             bg.ImageSource = image;
 
-            Title = System.IO.Path.GetFileName(fileList[imageIndex].FileName) + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
+            Title = System.IO.Path.GetFileName(_fileList[imageIndex].FileName) + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
 
-            canvas.Background = bg;
-            canvas.Width = bg.ImageSource.Width;
-            canvas.Height = bg.ImageSource.Height;
+            Canvas.Background = bg;
+            Canvas.Width = bg.ImageSource.Width;
+            Canvas.Height = bg.ImageSource.Height;
 
-            Canvas_Scale(zoom);
+            Canvas_Scale(_zoom);
 
-            Keyboard.Focus(canvas);
+            Keyboard.Focus(Canvas);
         }
 
         private void Canvas_Load_Rectangles(int imageIndex)
         {
-            canvas.Children.Clear();
+            Canvas.Children.Clear();
 
-            foreach (var sample in fileList[imageIndex].Rectangles)
+            foreach (var sample in _fileList[imageIndex].Rectangles)
             {
-                canvas.Children.Add(initializeShape(sample, new Rectangle(), scaleX, scaleY, Brushes.OrangeRed));
+                Canvas.Children.Add(InitializeShape(sample, new System.Windows.Shapes.Rectangle(), _scaleX, _scaleY, Brushes.OrangeRed));
             }
         }
 
-        private const double zoomSpeed = 960;
+        private const double ZoomSpeed = 960;
         private void Canvas_Scale(double zoom)
         {
-            canvas.LayoutTransform = new ScaleTransform(Math.Exp(zoom / zoomSpeed), Math.Exp(zoom / zoomSpeed));
+            Canvas.LayoutTransform = new ScaleTransform(Math.Exp(zoom / ZoomSpeed), Math.Exp(zoom / ZoomSpeed));
         }
 
-        private async Task<bool> Canvas_Click(MouseButton ChangedButton)
+        private async Task<bool> Canvas_Click(MouseButton changedButton)
         {
-            bool Handled = false;
-            if (ChangedButton == MouseButton.Left)
+            bool handled = false;
+            if (changedButton == MouseButton.Left)
             {
-                fileIndex++;
-                rectangleIndex = 0;
-                rectangleHasFocus = false;
-                Handled = true;
+                _fileIndex++;
+                _rectangleIndex = 0;
+                _rectangleHasFocus = false;
+                handled = true;
             }
-            else if (ChangedButton == MouseButton.Right)
+            else if (changedButton == MouseButton.Right)
             {
-                fileIndex--;
-                rectangleIndex = 0;
-                rectangleHasFocus = false;
-                Handled = true;
+                _fileIndex--;
+                _rectangleIndex = 0;
+                _rectangleHasFocus = false;
+                handled = true;
             }
 
-            if (fileIndex < 0)
+            if (_fileIndex < 0)
             {
-                fileIndex = 0;
+                _fileIndex = 0;
             }
-            else if (fileIndex < fileList.Count)
+            else if (_fileIndex < _fileList.Count)
             {
-                await Canvas_Load_Image(fileIndex);
-                Canvas_Load_Rectangles(fileIndex);
+                await Canvas_Load_Image(_fileIndex);
+                Canvas_Load_Rectangles(_fileIndex);
             }
             else
             {
-                fileIndex = fileList.Count;
-                canvas.Children.Clear();
-                canvas.Background = Brushes.SkyBlue;
+                _fileIndex = _fileList.Count;
+                Canvas.Children.Clear();
+                Canvas.Background = Brushes.SkyBlue;
             }
-            return Handled;
+            return handled;
         }
 
-        public System.Windows.Shapes.Shape initializeShape(rectangle rect, System.Windows.Shapes.Shape shape, double scaleX, double scaleY, Brush color)
+        public System.Windows.Shapes.Shape InitializeShape(Rectangle rect, System.Windows.Shapes.Shape shape, double scaleX, double scaleY, Brush color)
         {
-            shape.SetValue(rectLeftProperty, rect.x * scaleX);
-            shape.SetValue(rectTopProperty, rect.y * scaleY);
-            shape.Width = rect.w * scaleX;
-            shape.Height = rect.h * scaleY;
+            shape.SetValue(RectLeftProperty, rect.X * scaleX);
+            shape.SetValue(RectTopProperty, rect.Y * scaleY);
+            shape.Width = rect.W * scaleX;
+            shape.Height = rect.H * scaleY;
 
             shape.Stroke = color;
             shape.StrokeThickness = 2;
@@ -203,119 +203,119 @@ namespace ObjectDetect
             return shape;
         }
 
-        private rectangle getRect(Point A, Point B)
+        private Rectangle GetRect(Point a, Point b)
         {
-            var minX = Math.Min(A.X, B.X) / scaleX;
-            var maxX = Math.Max(B.X, A.X) / scaleX;
-            var minY = Math.Min(B.Y, A.Y) / scaleY;
-            var maxY = Math.Max(A.Y, B.Y) / scaleY;
-            return Clamp_Rectangle(new rectangle(minX, minY, maxX - minX, maxY - minY));
+            var minX = Math.Min(a.X, b.X) / _scaleX;
+            var maxX = Math.Max(b.X, a.X) / _scaleX;
+            var minY = Math.Min(b.Y, a.Y) / _scaleY;
+            var maxY = Math.Max(a.Y, b.Y) / _scaleY;
+            return Clamp_Rectangle(new Rectangle(minX, minY, maxX - minX, maxY - minY));
         }
 
         private void Canvas_DragIntermediate(Point dragStart, Point dragEnd)
         {
-            canvas.Children.Clear();
-            canvas.Children.Add(initializeShape(getRect(dragStart, dragEnd), new Rectangle(), scaleX, scaleY, Brushes.RoyalBlue));
-            Title = dragStart.X + "," + dragStart.Y + " - " + getRect(dragStart, dragEnd).x + "," + getRect(dragStart, dragEnd).y;
+            Canvas.Children.Clear();
+            Canvas.Children.Add(InitializeShape(GetRect(dragStart, dragEnd), new System.Windows.Shapes.Rectangle(), _scaleX, _scaleY, Brushes.RoyalBlue));
+            Title = dragStart.X + "," + dragStart.Y + " - " + GetRect(dragStart, dragEnd).X + "," + GetRect(dragStart, dragEnd).Y;
         }
 
         private void Canvas_DragFinal(Point dragStart, Point dragEnd)
         {
-            fileList[fileIndex].Rectangles.Insert(rectangleIndex, getRect(dragStart, dragEnd));
-            Canvas_Focus_Rectangle(fileIndex, rectangleIndex);
-            unsavedChangesPresent = true;
+            _fileList[_fileIndex].Rectangles.Insert(_rectangleIndex, GetRect(dragStart, dragEnd));
+            Canvas_Focus_Rectangle(_fileIndex, _rectangleIndex);
+            _unsavedChangesPresent = true;
         }
-        private rectangle Clamp_Rectangle(rectangle rect)
+        private Rectangle Clamp_Rectangle(Rectangle rect)
         {
-            if (canvas.Background is ImageBrush && ((ImageBrush)canvas.Background).ImageSource is BitmapImage)
+            if (Canvas.Background is ImageBrush && ((ImageBrush)Canvas.Background).ImageSource is BitmapImage)
             {
-                var image = (BitmapImage)((ImageBrush)canvas.Background).ImageSource;
-                rect.x = fixed_point.Min(fixed_point.Max(rect.x, 0), image.PixelWidth - 1);
-                rect.w = fixed_point.Min(rect.w, image.PixelWidth - rect.x - 1);
-                rect.y = fixed_point.Min(fixed_point.Max(rect.y, 0), image.PixelHeight - 1);
-                rect.h = fixed_point.Min(rect.h, image.PixelHeight - rect.y - 1);
-                rect.h = rect.w = fixed_point.Min(rect.w, rect.h);
+                var image = (BitmapImage)((ImageBrush)Canvas.Background).ImageSource;
+                rect.X = FixedPoint.Min(FixedPoint.Max(rect.X, 0), image.PixelWidth - 1);
+                rect.W = FixedPoint.Min(rect.W, image.PixelWidth - rect.X - 1);
+                rect.Y = FixedPoint.Min(FixedPoint.Max(rect.Y, 0), image.PixelHeight - 1);
+                rect.H = FixedPoint.Min(rect.H, image.PixelHeight - rect.Y - 1);
+                rect.H = rect.W = FixedPoint.Min(rect.W, rect.H);
             }
             else
             {
-                rect.x = fixed_point.Max(rect.x, 0);
-                rect.y = fixed_point.Max(rect.y, 0);
-                rect.h = rect.w = fixed_point.Min(rect.h, rect.w);
+                rect.X = FixedPoint.Max(rect.X, 0);
+                rect.Y = FixedPoint.Max(rect.Y, 0);
+                rect.H = rect.W = FixedPoint.Min(rect.H, rect.W);
             }
             return rect;
         }
 
-        bool rectangleHasFocus = false;
-        private async Task changeRectangle(int offset) {
-            rectangleIndex += offset;
-            if (rectangleIndex < 0)
+        bool _rectangleHasFocus = false;
+        private async Task ChangeRectangle(int offset) {
+            _rectangleIndex += offset;
+            if (_rectangleIndex < 0)
             {
-                fileIndex--;
-                if (fileIndex < 0)
+                _fileIndex--;
+                if (_fileIndex < 0)
                 {
-                    fileIndex = 0;
-                    rectangleIndex = 0;
+                    _fileIndex = 0;
+                    _rectangleIndex = 0;
                 }
                 else
                 {
-                    rectangleIndex = fileList[fileIndex].Rectangles.Count - 1;
+                    _rectangleIndex = _fileList[_fileIndex].Rectangles.Count - 1;
                 }
-                await Canvas_Load_Image(fileIndex);
+                await Canvas_Load_Image(_fileIndex);
             }
-            else if (rectangleIndex >= fileList[fileIndex].Rectangles.Count)
+            else if (_rectangleIndex >= _fileList[_fileIndex].Rectangles.Count)
             {
-                fileIndex++;
-                if (fileIndex >= fileList.Count)
+                _fileIndex++;
+                if (_fileIndex >= _fileList.Count)
                 {
-                    fileIndex = fileList.Count - 1;
-                    rectangleIndex = fileList[fileIndex].Rectangles.Count - 1;
+                    _fileIndex = _fileList.Count - 1;
+                    _rectangleIndex = _fileList[_fileIndex].Rectangles.Count - 1;
                 }
                 else
                 {
-                    rectangleIndex = 0;
+                    _rectangleIndex = 0;
                 }
-                await Canvas_Load_Image(fileIndex);
+                await Canvas_Load_Image(_fileIndex);
             }
         }
 
-        private readonly Stack<Tuple<int, rectangle>> undoStack = new Stack<Tuple<int, rectangle>>();
-        private void removeRectangle(int fileIndex, int rectangleIndex)
+        private readonly Stack<Tuple<int, Rectangle>> _undoStack = new Stack<Tuple<int, Rectangle>>();
+        private void RemoveRectangle(int fileIndex, int rectangleIndex)
         {
-            var removed = fileList[fileIndex].Rectangles[rectangleIndex];
-            undoStack.Push(Tuple.Create(fileIndex, removed));
-            fileList[fileIndex].Rectangles.RemoveAt(rectangleIndex);
-            rectangleHasFocus = false;
+            var removed = _fileList[fileIndex].Rectangles[rectangleIndex];
+            _undoStack.Push(Tuple.Create(fileIndex, removed));
+            _fileList[fileIndex].Rectangles.RemoveAt(rectangleIndex);
+            _rectangleHasFocus = false;
         }
 
-        private void undoRemoveRectangle(ref int fileIndex, ref int rectangleIndex){
-            if (undoStack.Count > 0)
+        private void UndoRemoveRectangle(ref int fileIndex, ref int rectangleIndex){
+            if (_undoStack.Count > 0)
             {
-                var removed = undoStack.Pop();
+                var removed = _undoStack.Pop();
                 fileIndex = removed.Item1;
-                rectangleIndex = fileList[fileIndex].Rectangles.Count;
-                fileList[fileIndex].Rectangles.Add(removed.Item2);
+                rectangleIndex = _fileList[fileIndex].Rectangles.Count;
+                _fileList[fileIndex].Rectangles.Add(removed.Item2);
             }
         }
 
         enum Dimension {
-            x, y, size
+            X, Y, Size
         }
 
-        private rectangle transformRectangle(rectangle rectangle, Dimension dimension, int amount){
+        private Rectangle TransformRectangle(Rectangle rectangle, Dimension dimension, int amount){
             switch (dimension) {
-                case Dimension.x:
+                case Dimension.X:
                     rectangle.Left += amount;
                     break;
-                case Dimension.y:
+                case Dimension.Y:
                     rectangle.Top += amount;
                     break;
-                case Dimension.size:
+                case Dimension.Size:
                     rectangle.Width += amount;
                     rectangle.Height += amount;
                     break;
             }
             rectangle = Clamp_Rectangle(rectangle);
-            unsavedChangesPresent = true;
+            _unsavedChangesPresent = true;
             return rectangle;
         }
     }

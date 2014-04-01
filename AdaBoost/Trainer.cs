@@ -10,18 +10,14 @@ namespace AdaBoost
     /// <summary>
     /// This class is used to produce a trained classifier.
     /// </summary>
-    /// <typeparam name="Sample">The type of sample to be classified.</typeparam>
-    public class Trainer<Sample> where Sample : ISample
+    /// <typeparam name="TSample">The type of sample to be classified.</typeparam>
+    public class Trainer<TSample> where TSample : ISample
     {
-
         /// <summary>
         /// Gets the classifier in its current state.
         /// </summary>
         /// <returns>A copy of the current state of the classifier being trained.</returns>
-        public Classifier<Sample> getClassifier()
-        {
-            return classifier;
-        }
+        public Classifier<TSample> Classifier { get; private set; }
 
         /// <summary>
         /// Creates a boost classifier trainer.
@@ -30,122 +26,92 @@ namespace AdaBoost
         /// will be iterated through as each layer is added.</param>
         /// <param name="positiveSamples">The samples with which to train the learner.</param>
         /// <param name="negativeSamples">The samples with which to train the learner.</param>
-        public Trainer(IEnumerable<ILearner<Sample>> learners, List<Sample> positiveSamples, List<Sample> negativeSamples)
+        public Trainer(IEnumerable<ILearner<TSample>> learners, List<TSample> positiveSamples, List<TSample> negativeSamples)
         {
-            this.learners = learners.ToArray();
+            this._learners = learners.ToArray();
             float count = positiveSamples.Count + negativeSamples.Count;
-            this.positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<Sample>(s, i, 1f, 1f))).ToArray();
+            this._positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<TSample>(s, i, 1f, 1f))).ToArray();
             int offset = positiveSamples.Count;
-            this.negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<Sample>(s, i + offset, 1f, -1f))).ToArray();
+            this._negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<TSample>(s, i + offset, 1f, -1f))).ToArray();
 
-            this.classifier = new Classifier<Sample>();
-
-
-            this.cacheIndex = Interlocked.Increment(ref nextCacheIndex);
+            this.Classifier = new Classifier<TSample>();
 
         }
 
-        private static int nextCacheIndex = 0;
-        private readonly int cacheIndex;
-        private static readonly MemoryCache cache = MemoryCache.Default;
+        private readonly Dictionary<string, Dictionary<string, float[]>> _cache =
+            new Dictionary<string, Dictionary<string, float[]>>();
 
-        readonly TrainingSample<Sample>[] positiveSamples;
-        readonly TrainingSample<Sample>[] negativeSamples;
+        readonly TrainingSample<TSample>[] _positiveSamples;
+        readonly TrainingSample<TSample>[] _negativeSamples;
 
-        private readonly Classifier<Sample> classifier;
-
-        readonly ILearner<Sample>[] learners;
+        readonly ILearner<TSample>[] _learners;
 
 
         /// <summary>
         /// Executes one iteration of the training process.
         /// </summary>
         /// <returns>the current value of the error function over all samples.</returns>
-        public float addLayer()
+        public float AddLayer()
         {
-            bestLoss = float.PositiveInfinity;
+            _bestLoss = float.PositiveInfinity;
             double loss = 0;
 
             //Parallel.ForEach(learners, learner => bestConfiguration(learner));
-            foreach (var learner in learners)
+            foreach (var learner in _learners)
             {
-                bestConfiguration(learner);
+                BestConfiguration(learner);
             }
 
             //Reversing the learner list each iteration means our mru cache will behave more like an lru cache
-            Array.Reverse(learners);
+            Array.Reverse(_learners);
 
             //Summing sorted values is more numerically stable than summing unsorted values. This operation only needs to be
             //performed once per iteration, and improves the accuracy of all subsequent summations during weak leraner selection.
-            Array.Sort(positiveSamples, (l, r) => l.weight.CompareTo(r.weight));
-            Array.Sort(negativeSamples, (l, r) => l.weight.CompareTo(r.weight));
+            Array.Sort(_positiveSamples, (l, r) => l.Weight.CompareTo(r.Weight));
+            Array.Sort(_negativeSamples, (l, r) => l.Weight.CompareTo(r.Weight));
 
-            if (this.bestLearner.HasValue && bestLoss < prevLoss)
+            if (this._bestLearner.HasValue && _bestLoss < _prevLoss)
             {
-                var outputs = this.bestLearner.Value.Value;
-                var layer = this.bestLearner.Value.Key;
+                var outputs = this._bestLearner.Value.Value;
+                var layer = this._bestLearner.Value.Key;
 
-                classifier.addLayer(layer);
+                Classifier.AddLayer(layer);
 
                 //Add new layer's output to each learner's cumulative score, recalculate weight, find highest weight
-                for (int j = 0; j < positiveSamples.Length; j++)
+                for (int j = 0; j < _positiveSamples.Length; j++)
                 {
-                    positiveSamples[j].addConfidence(outputs[positiveSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
-                    loss += (positiveSamples[j].weight = (float)Math.Exp(-positiveSamples[j].confidence));
+                    _positiveSamples[j].AddConfidence(outputs[_positiveSamples[j].Index] > layer.Threshold ? layer.CoefPos : layer.CoefNeg);
+                    loss += (_positiveSamples[j].Weight = (float)Math.Exp(-_positiveSamples[j].Confidence));
                 }
-                for (int j = 0; j < negativeSamples.Length; j++)
+                for (int j = 0; j < _negativeSamples.Length; j++)
                 {
-                    negativeSamples[j].addConfidence(outputs[negativeSamples[j].index] > layer.threshold ? layer.coefPos : layer.coefNeg);
-                    loss += (negativeSamples[j].weight = (float)Math.Exp(negativeSamples[j].confidence));
+                    _negativeSamples[j].AddConfidence(outputs[_negativeSamples[j].Index] > layer.Threshold ? layer.CoefPos : layer.CoefNeg);
+                    loss += (_negativeSamples[j].Weight = (float)Math.Exp(_negativeSamples[j].Confidence));
                 }
 
 #if DEBUG
-                if (loss > prevLoss) throw new Exception("Loss went up");
-                if (!approxEqual((float)loss, bestLoss))
+                if (loss > _prevLoss) throw new Exception("Loss went up");
+                if (!ApproxEqual((float)loss, _bestLoss))
                 {
                     throw new Exception("Weight calculation wrong");
                 }
 #endif
-                prevLoss = (float)loss;
+                _prevLoss = (float)loss;
             }
-            return prevLoss;
+            return _prevLoss;
         }
 
-        private bool approxEqual(float l, float r)
+        private readonly Object _bestLock = new Object();
+        private KeyValuePair<Layer<TSample>, float[]>? _bestLearner;
+        private float _bestLoss = float.PositiveInfinity;
+        private float _prevLoss = float.PositiveInfinity;
+
+        private static bool ApproxEqual(float v1, float v2)
         {
-            return (l + l / 64) > r && (l - l / 64) < r;
+            return v1*1.05 > v2 && v2 > v1*0.95;
         }
 
-        private readonly Object bestLock = new Object();
-        private KeyValuePair<Layer<Sample>, float[]>? bestLearner;
-        private float bestLoss = float.PositiveInfinity;
-        private float prevLoss = float.PositiveInfinity;
-
-        private float getLoss(float coefTrue, float coefFalse, IEnumerable<Tuple<float,bool>> predictions, float target)
-        {
-            double cost = 0;
-
-            foreach (var p in predictions)
-            {
-                cost += Math.Exp(-(p.Item1 + (p.Item2 ? coefTrue : coefFalse)) * target);
-            }
-
-            return (float)cost;
-        }
-
-        private float sumWeights(TrainingSample<Sample>[] samples)
-        {
-            float sum = 0;
-
-            for (int i = 0; i < samples.Length; i++)
-            {
-                sum += samples[i].weight;
-            }
-
-            return sum;
-        }
-
-        private void sumWeights(float[] weights, bool[] coefSelect, ref double sum1, ref double sum2)
+        private static void SumWeights(float[] weights, bool[] coefSelect, ref double sum1, ref double sum2)
         {
 #if DEBUG
             if (weights.Length != coefSelect.Length) throw new Exception("weights.Length != coefSelect.Length");
@@ -158,107 +124,107 @@ namespace AdaBoost
             }
         }
 
-        private void bestConfiguration(ILearner<Sample> learner)
+        private void BestConfiguration(ILearner<TSample> learner)
         {
-            string cacheKey = "<" + cacheIndex + ">" + learner.getUniqueIDString();
-            Dictionary<string, float[]> predictions = cache[cacheKey] as Dictionary<string, float[]>;
+            string cacheKey = learner.GetUniqueIdString();
+            Dictionary<string, float[]> predictions = _cache[cacheKey];
 
             if (predictions == null)
             {
-                predictions = getPredictions(learner);
+                predictions = GetPredictions(learner);
 
-                cache[cacheKey] = predictions;
+                _cache[cacheKey] = predictions;
             }
 
             Parallel.ForEach(
                 predictions,
                 () => new LayerHolder(float.PositiveInfinity, null, null),
-                (p, s, best) => bestLayerSetup(learner.withParams(p.Key), p.Value, best),
-                setBest
+                (p, s, best) => BestLayerSetup(learner.WithParams(p.Key), p.Value, best),
+                SetBest
             );
         }
 
-        private Dictionary<string, float[]> getPredictions(ILearner<Sample> learner)
+        private Dictionary<string, float[]> GetPredictions(ILearner<TSample> learner)
         {
             var predictions = new Dictionary<string, float[]>();
 
-            foreach (var s in positiveSamples.Concat(negativeSamples))
+            foreach (var s in _positiveSamples.Concat(_negativeSamples))
             {
-                learner.setSample(s.sample);
-                foreach (var config in learner.getPossibleParams())
+                learner.SetSample(s.Sample);
+                foreach (var config in learner.GetPossibleParams())
                 {
                     if (!predictions.ContainsKey(config))
                     {
-                        predictions.Add(config, new float[positiveSamples.Length + negativeSamples.Length]);
+                        predictions.Add(config, new float[_positiveSamples.Length + _negativeSamples.Length]);
                     }
-                    var temp = learner.withParams(config);
+                    var temp = learner.WithParams(config);
 
-                    predictions[config][s.index] = temp.classify();
+                    predictions[config][s.Index] = temp.Classify();
                 }
             }
             return predictions;
         }
 
-        private void setBest(LayerHolder best)
+        private void SetBest(LayerHolder best)
         {
-            lock (bestLock)
+            lock (_bestLock)
             {
-                if (best.loss < bestLoss)
+                if (best.Loss < _bestLoss)
                 {
-                    bestLearner = new KeyValuePair<Layer<Sample>, float[]>(best.layer, best.values);
-                    bestLoss = best.loss;
+                    _bestLearner = new KeyValuePair<Layer<TSample>, float[]>(best.Layer, best.Values);
+                    _bestLoss = best.Loss;
                 }
             }
         }
 
         private struct LayerHolder
         {
-            public readonly float loss;
-            public readonly Layer<Sample> layer;
-            public readonly float[] values;
+            public readonly float Loss;
+            public readonly Layer<TSample> Layer;
+            public readonly float[] Values;
 
-            public LayerHolder(float l, Layer<Sample> L, float[] v)
+            public LayerHolder(float loss, Layer<TSample> layer, float[] values)
             {
-                loss = l;
-                layer = L;
-                values = v;
+                Loss = loss;
+                Layer = layer;
+                Values = values;
             }
         }
 
-        private LayerHolder bestLayerSetup(ILearner<Sample> learner, float[] predictions, LayerHolder best)
+        private LayerHolder BestLayerSetup(ILearner<TSample> learner, float[] predictions, LayerHolder best)
         {
-            LayerHolder result = optimizeCoefficients(learner, predictions);
+            LayerHolder result = OptimizeCoefficients(learner, predictions);
 
 #if DEBUG
-            if (float.IsInfinity(result.loss))
+            if (float.IsInfinity(result.Loss))
             {
                 ;//let me know
             }
 #endif
 
-            best = result.loss < best.loss ? result : best;
+            best = result.Loss < best.Loss ? result : best;
 
             return best;
         }
 
-        private LayerHolder optimizeCoefficients(ILearner<Sample> learner, float[] outputs)
+        private LayerHolder OptimizeCoefficients(ILearner<TSample> learner, float[] outputs)
         {
-            float[] positiveWeights = positiveSamples.Select(s => s.weight).ToArray();
-            float[] negativeWeights = negativeSamples.Select(s => s.weight).ToArray();
+            float[] positiveWeights = _positiveSamples.Select(s => s.Weight).ToArray();
+            float[] negativeWeights = _negativeSamples.Select(s => s.Weight).ToArray();
 
-            bool[] positiveCorrect = new bool[positiveSamples.Length];
-            bool[] negativeCorrect = new bool[negativeSamples.Length];
+            bool[] positiveCorrect = new bool[_positiveSamples.Length];
+            bool[] negativeCorrect = new bool[_negativeSamples.Length];
 
 #if DEBUG
             bool perfect = true;
-            foreach (var s in positiveSamples.Concat(negativeSamples))
+            foreach (var s in _positiveSamples.Concat(_negativeSamples))
             {
-                learner.setSample(s.sample);
-                if (learner.classify() != outputs[s.index])
+                learner.SetSample(s.Sample);
+                if (learner.Classify() != outputs[s.Index])
                 {
                     throw new Exception();
                 }
-                perfect &= s.actual == outputs[s.index];
+                perfect &= s.Actual == outputs[s.Index];
             }
 #endif
 
@@ -274,9 +240,9 @@ namespace AdaBoost
             {
                 {
                     int i = 0;
-                    foreach (var s in positiveSamples) positiveCorrect[i++] = outputs[s.index] > threshold;
+                    foreach (var s in _positiveSamples) positiveCorrect[i++] = outputs[s.Index] > threshold;
                     i = 0;
-                    foreach (var s in negativeSamples) negativeCorrect[i++] = outputs[s.index] <= threshold;
+                    foreach (var s in _negativeSamples) negativeCorrect[i++] = outputs[s.Index] <= threshold;
                 }
 
                 double sumWeightsPosCorrect = 0;
@@ -284,8 +250,8 @@ namespace AdaBoost
                 double sumWeightsNegCorrect = 0;
                 double sumWeightsNegIncorrect = 0;
 
-                sumWeights(positiveWeights, positiveCorrect, ref sumWeightsPosCorrect, ref sumWeightsPosIncorrect);
-                sumWeights(negativeWeights, negativeCorrect, ref sumWeightsNegCorrect, ref sumWeightsNegIncorrect);
+                SumWeights(positiveWeights, positiveCorrect, ref sumWeightsPosCorrect, ref sumWeightsPosIncorrect);
+                SumWeights(negativeWeights, negativeCorrect, ref sumWeightsNegCorrect, ref sumWeightsNegIncorrect);
 
                 float coefPos = (float)Math.Log(sumWeightsPosCorrect / sumWeightsNegIncorrect) / 2;
                 float coefNeg = (float)Math.Log(sumWeightsNegCorrect / sumWeightsPosIncorrect) / -2;
@@ -297,7 +263,7 @@ namespace AdaBoost
                 loss += (float)(sumWeightsNegCorrect * Math.Exp(coefNeg) + sumWeightsPosIncorrect * Math.Exp(-coefNeg));
 
 #if DEBUG
-                if (!approxEqual((float)(sumWeightsNegCorrect + sumWeightsNegIncorrect + sumWeightsPosCorrect + sumWeightsPosIncorrect), 1))
+                if (!ApproxEqual((float)(sumWeightsNegCorrect + sumWeightsNegIncorrect + sumWeightsPosCorrect + sumWeightsPosIncorrect), 1))
                 {
                     ;
                 }
@@ -324,7 +290,7 @@ namespace AdaBoost
                 threshold = next;
             }
 
-            return new LayerHolder(bestCost, new Layer<Sample>(learner, bestPos, bestNeg, bestThres), outputs);
+            return new LayerHolder(bestCost, new Layer<TSample>(learner, bestPos, bestNeg, bestThres), outputs);
         }
     }
 }

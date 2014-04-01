@@ -1,4 +1,4 @@
-﻿<Window x:Name="closing" x:Class="ObjectDetect.MainWindow"
+﻿<Window x:Class="ObjectDetect.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525"
@@ -21,8 +21,8 @@
             </MenuItem>
         </Menu>
         
-        <ScrollViewer Height="auto" Width="auto" Name="scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-            <Canvas Height="auto" Width="auto" Name="canvas" Focusable="True"
+        <ScrollViewer Height="auto" Width="auto" Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <Canvas Height="auto" Width="auto" Name="Canvas" Focusable="True"
                     MouseWheel="canvas_MouseWheel" 
                     MouseDown="Canvas_MouseDown" 
                     MouseMove="Canvas_MouseMove"

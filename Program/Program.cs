@@ -8,7 +8,7 @@ namespace Program
 {
     class Program
     {
-        private static readonly Random rand = new Random();
+        private static readonly Random Rand = new Random();
 
         static void Main(string[] args)
         {
@@ -20,7 +20,7 @@ namespace Program
 
                     List<Sample> pointsPos, pointsNeg;
 
-                    int flippedLabels = generateSamples(error, out pointsPos, out pointsNeg);
+                    int flippedLabels = GenerateSamples(error, out pointsPos, out pointsNeg);
 
                     Trainer<Sample> t = new Trainer<Sample>(new AdaBoost.ILearner<Sample>[] { new Sample.Learner(21) }, pointsPos, pointsNeg);
 
@@ -29,7 +29,7 @@ namespace Program
                     Console.WriteLine("Noise: " + error + " (" + flippedLabels + " label errors)");
                     for (int i = 0; i < 1000; i++)
                     {
-                        float cost = t.addLayer();
+                        float cost = t.AddLayer();
 
                         if (float.IsNaN(cost))
                         {
@@ -38,8 +38,8 @@ namespace Program
                         }
 
                         //Console.WriteLine("Loss = " + (float)cost);
-                        int testErrors = testTrainer(t.getClassifier(), pointsPos, pointsNeg);
-                        int veriErrors = testTrainer(t.getClassifier());
+                        int testErrors = TestTrainer(t.Classifier, pointsPos, pointsNeg);
+                        int veriErrors = TestTrainer(t.Classifier);
 
                         if (testErrors == prev) convergence++;
                         else convergence = 0;
@@ -63,66 +63,66 @@ namespace Program
             Console.ReadKey();
         }
 
-        private static int generateSamples(double error, out List<Sample> pointsPos, out List<Sample> pointsNeg)
+        private static int GenerateSamples(double error, out List<Sample> pointsPos, out List<Sample> pointsNeg)
         {
             int flippedLabels = 0;
             pointsPos = new List<Sample>();
             pointsNeg = new List<Sample>();
 
 
-            flippedLabels += addSamples(1000, largeMargins, error, pointsPos, pointsNeg);
-            flippedLabels += addSamples(1000, pullers, error, pointsPos, pointsNeg);
-            flippedLabels += addSamples(2000, penalisers, error, pointsPos, pointsNeg);
+            flippedLabels += AddSamples(1000, LargeMargins, error, pointsPos, pointsNeg);
+            flippedLabels += AddSamples(1000, Pullers, error, pointsPos, pointsNeg);
+            flippedLabels += AddSamples(2000, Penalisers, error, pointsPos, pointsNeg);
 
             return flippedLabels;
         }
 
-        private static Sample penalisers(bool pos)
+        private static Sample Penalisers(bool pos)
         {
             Sample s = new Sample(21);
             for (int j = 0; j < 11; j++)
             {
-                int loc = rand.Next(j + 1);
-                s.features[j] = s.features[loc];
-                s.features[loc] = (pos ^ j > 4) ? 1 : -1;
+                int loc = Rand.Next(j + 1);
+                s.Features[j] = s.Features[loc];
+                s.Features[loc] = (pos ^ j > 4) ? 1 : -1;
             }
             for (int j = 11; j < 21; j++)
             {
-                int loc = rand.Next(j - 10);
-                s.features[j] = s.features[11 + loc];
-                s.features[11 + loc] = (pos ^ j > 16) ? 1 : -1;
+                int loc = Rand.Next(j - 10);
+                s.Features[j] = s.Features[11 + loc];
+                s.Features[11 + loc] = (pos ^ j > 16) ? 1 : -1;
             }
             return s;
         }
 
-        private static Sample pullers(bool pos)
+        private static Sample Pullers(bool pos)
         {
             Sample s = new Sample(21);
             for (int j = 0; j < 21; j++)
             {
-                s.features[j] = (pos ^ j > 10) ? 1 : -1;
+                s.Features[j] = (pos ^ j > 10) ? 1 : -1;
             }
             return s;
         }
 
-        private static Sample largeMargins(bool pos)
+        private static Sample LargeMargins(bool pos)
         {
             var s = new Sample(21);
             for (int j = 0; j < 21; j++)
             {
-                s.features[j] = pos ? 1 : -1;
+                s.Features[j] = pos ? 1 : -1;
             }
             return s;
         }
 
-        private static int addSamples(int count, Func<bool, Sample> featureGenerator, double error, List<Sample> pointsPos, List<Sample> pointsNeg)
+        private static int AddSamples(int count, Func<bool, Sample> featureGenerator, double error, List<Sample> pointsPos, List<Sample> pointsNeg)
         {
             int flippedLabels = 0;
             for (int i = 0; i < count; i++)
             {
-                bool label = rand.NextDouble() < 0.5;
+                bool label = Rand.NextDouble() < 0.5;
                 Sample s = featureGenerator(label);
-                if (rand.NextDouble() < error)
+                if (Rand.NextDouble() < error)
                 {
                     label = !label;
                     flippedLabels++;
@@ -133,22 +133,22 @@ namespace Program
             return flippedLabels;
         }
 
-        static Encoding encoding = new UnicodeEncoding();
+        static Encoding _encoding = new UnicodeEncoding();
 
-        static int testTrainer(Classifier<Sample> c, List<Sample> pointsPos, List<Sample> pointsNeg)
+        static int TestTrainer(Classifier<Sample> c, IEnumerable<Sample> pointsPos, IEnumerable<Sample> pointsNeg)
         {
             //Console.WriteLine(errors / 40f + "% error rate.");
             //Console.WriteLine();
-            return pointsPos.Count(s => c.classify(s) <= 0) + pointsNeg.Count(s => c.classify(s) >= 0);
+            return pointsPos.Count(s => c.Classify(s) <= 0) + pointsNeg.Count(s => c.Classify(s) >= 0);
         }
 
-        static int testTrainer(Classifier<Sample> c)
+        static int TestTrainer(Classifier<Sample> c)
         {
             List<Sample> pointsPos, pointsNeg;
 
-            generateSamples(0, out pointsPos, out pointsNeg);
+            GenerateSamples(0, out pointsPos, out pointsNeg);
 
-            return testTrainer(c, pointsPos, pointsNeg);
+            return TestTrainer(c, pointsPos, pointsNeg);
         }
     }
 }

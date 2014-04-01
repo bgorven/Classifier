@@ -14,7 +14,7 @@ namespace AdaBoost
         /// </summary>
         /// <returns>A real value with sign equal to the expected class of the object and absolute
         /// value equal to strength of the prediction.</returns>
-        float classify();
+        float Classify();
 
         /// <summary>
         /// Sets the sample to be examined. As some processing may only need to be performed once
@@ -24,7 +24,7 @@ namespace AdaBoost
         /// allocated for the previous sample.
         /// </summary>
         /// <param name="s">The sample, which may be the same as the the previously set sample.</param>
-        void setSample(Sample s);
+        void SetSample(Sample s);
 
         /// <summary>
         /// Sets parameters for the following classification. A boost classifier may contain many
@@ -33,19 +33,19 @@ namespace AdaBoost
         /// </summary>
         /// <param name="parameter">A dictionary of parameters to be parsed according to some
         /// predetermined scheme.</param>
-        ILearner<Sample> withParams(string parameter);
+        ILearner<Sample> WithParams(string parameter);
 
         /// <summary>
         /// For improved performance, the output of this learner may be cached. This method allows the learner
         /// to be cached by string index.
         /// </summary>
         /// <returns>A string that uniquely identifies this learner.</returns>
-        string getUniqueIDString();
+        string GetUniqueIdString();
 
         /// <summary>
         /// During training, it may be desirable to iterate over every possible parameter of the learner.
         /// </summary>
         /// <returns>an iterable object containing every valid parameter combination for the learner.</returns>
-        IEnumerable<string> getPossibleParams();
+        IEnumerable<string> GetPossibleParams();
     }
 }

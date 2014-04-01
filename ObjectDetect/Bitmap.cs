@@ -2,8 +2,8 @@
 {
     class Bitmap<T>
     {
-        private readonly int stride;
-        private readonly T[] data;
+        private readonly int _stride;
+        private readonly T[] _data;
         public readonly int Width;
         public readonly int Height;
 
@@ -12,12 +12,12 @@
 
         public Bitmap(T[] data, int width, int height, int stride)
         {
-            this.data = data;
+            this._data = data;
             this.Width = width;
             this.Height = height;
-            this.stride = stride;
+            this._stride = stride;
         }
 
-        public T this[int x, int y] { get { return data[y * stride + x]; } }
+        public T this[int x, int y] { get { return _data[y * _stride + x]; } }
     }
 }

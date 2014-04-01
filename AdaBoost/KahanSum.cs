@@ -8,58 +8,58 @@ namespace AdaBoost
         /// <summary>
         /// The nominal value of this object.
         /// </summary>
-        public float s;
+        public float S;
 
         /// <summary>
         /// The compensation, such that s - c would be a better approximation of the sum of all values accumulated
         /// in s than s itself is.
         /// </summary>
-        public float c;
+        public float C;
 
-        public static KahanSum sum(IEnumerable<float> vals)
+        public static KahanSum Sum(IEnumerable<float> vals)
         {
             KahanSum sum = new KahanSum();
 
             foreach (float val in vals)
             {
-                sum.add(val);
+                sum.Add(val);
             }
 
             return sum;
         }
 
-        internal void add<T>(IEnumerable<T> vals, Func<T, float> function)
+        internal void Add<T>(IEnumerable<T> vals, Func<T, float> function)
         {
             foreach (T val in vals)
             {
-                add(function(val));
+                Add(function(val));
             }
         }
 
-        internal void add(IEnumerable<float> vals)
+        internal void Add(IEnumerable<float> vals)
         {
             foreach (float val in vals)
             {
-                add(val);
+                Add(val);
             }
         }
 
-        internal void add(float val)
+        internal void Add(float val)
         {
-            if (float.IsInfinity(s))
+            if (float.IsInfinity(S))
             {
                 return;
             }
             else if (float.IsInfinity(val))
             {
-                s = val;
+                S = val;
             }
             else
             {
-                float v = val - c;
-                float t = s + v;
-                c = (t - s) - v;
-                s = t;
+                float v = val - C;
+                float t = S + v;
+                C = (t - S) - v;
+                S = t;
             }
         }
     }

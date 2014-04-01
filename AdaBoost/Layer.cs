@@ -1,38 +1,28 @@
 ﻿namespace AdaBoost
 {
-    internal class Layer<Sample> where Sample : ISample
+    internal class Layer<TSample> where TSample : ISample
     {
-        private readonly ILearner<Sample> learner;
-        internal float coefPos, coefNeg;
-        internal float threshold;
+        private readonly ILearner<TSample> _learner;
+        internal float CoefPos, CoefNeg;
+        internal float Threshold;
 
-        internal Layer(ILearner<Sample> learner, float coefPos, float coefNeg, float threshold)
+        internal Layer(ILearner<TSample> learner, float coefPos, float coefNeg, float threshold)
         {
-            this.learner = learner;
-            this.coefPos = coefPos;
-            this.coefNeg = coefNeg;
-            this.threshold = threshold;
+            this._learner = learner;
+            this.CoefPos = coefPos;
+            this.CoefNeg = coefNeg;
+            this.Threshold = threshold;
         }
 
-        internal float classify(Sample s)
+        internal float Classify(TSample s)
         {
-            learner.setSample(s);
-            return learner.classify() > threshold ? coefPos : coefNeg;
+            _learner.SetSample(s);
+            return _learner.Classify() > Threshold ? CoefPos : CoefNeg;
         }
 
         public override string ToString()
         {
-            return learner + " > " + threshold.ToString("n") + " ? " + coefPos + " : " + coefNeg;
-        }
-
-        internal void setThreshold(float threshold)
-        {
-            this.threshold = threshold;
-        }
-
-        internal float getThreshold()
-        {
-            return threshold;
+            return _learner + " > " + Threshold.ToString("n") + " ? " + CoefPos + " : " + CoefNeg;
         }
     }
 }

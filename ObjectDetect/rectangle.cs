@@ -2,28 +2,28 @@
 
 namespace ObjectDetect
 {
-    public struct rectangle
+    public struct Rectangle
     {
-        public fixed_point x, y, w, h;
+        public FixedPoint X, Y, W, H;
 
-        public int Left { get { return (int)Math.Ceiling(x); } set { x = value; } }
-        public int Top { get { return (int)Math.Ceiling(y); } set { y = value; } }
-        public int Width { get { return (int)Math.Floor(w); } set { w = value; } }
-        public int Height { get { return (int)Math.Floor(h); } set { h = value; } }
+        public int Left { get { return (int)Math.Ceiling(X); } set { X = value; } }
+        public int Top { get { return (int)Math.Ceiling(Y); } set { Y = value; } }
+        public int Width { get { return (int)Math.Floor(W); } set { W = value; } }
+        public int Height { get { return (int)Math.Floor(H); } set { H = value; } }
 
-        public rectangle(int x, int y, int w, int h)
+        public Rectangle(int x, int y, int w, int h)
         {
-            this.x = x;
-            this.y = y;
-            this.w = w;
-            this.h = h;
+            this.X = x;
+            this.Y = y;
+            this.W = w;
+            this.H = h;
         }
-        public rectangle(double x, double y, double w, double h)
+        public Rectangle(double x, double y, double w, double h)
         {
-            this.x = (fixed_point)x;
-            this.y = (fixed_point)y;
-            this.w = (fixed_point)w;
-            this.h = (fixed_point)h;
+            this.X = (FixedPoint)x;
+            this.Y = (FixedPoint)y;
+            this.W = (FixedPoint)w;
+            this.H = (FixedPoint)h;
         }
     }
 }

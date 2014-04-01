@@ -6,9 +6,9 @@ namespace ObjectDetect
 {
     public class SlidingWindow
     {
-        readonly int w;
-        readonly int h;
-        readonly int szMin, szMax, szExp, offsetExp;
+        readonly int _w;
+        readonly int _h;
+        readonly int _szMin, _szMax, _szExp, _offsetExp;
 
         /// <summary>
         /// Each rectangular region within an image is given a unique integer index.
@@ -24,77 +24,77 @@ namespace ObjectDetect
         /// offset steps should not be smaller than pixels, thus if the startSize is 64, for instance, offsetStepSize param should not be less than 6.</param>
         public SlidingWindow(int w, int h, int startSize, int endSize, int stepSize, int offsetStepSize)
         {
-            this.w = w;
-            this.h = h;
-            this.szMin = startSize;
-            this.szMax = endSize;
-            this.szExp = stepSize;
-            this.offsetExp = offsetStepSize;
+            this._w = w;
+            this._h = h;
+            this._szMin = startSize;
+            this._szMax = endSize;
+            this._szExp = stepSize;
+            this._offsetExp = offsetStepSize;
         }
 
-        public int getOffsetStepsPerWindow()
+        public int OffsetStepsPerWindow
         {
-            return 1 << offsetExp;
+            get { return 1 << _offsetExp; }
         }
 
-        public int getNearestWindow(int x, int y, int width, int height)
+        public int GetNearestWindow(int x, int y, int width, int height)
         {
             //precise center point
-            var centerX = x + (fixed_point)width / 2;
-            var centerY = y + (fixed_point)height / 2;
+            var centerX = x + (FixedPoint)width / 2;
+            var centerY = y + (FixedPoint)height / 2;
 
             int nextIndexBase = 0;
-            foreach (var winSz in winSizes())
+            foreach (var winSz in WinSizes())
             {
                 int indexBase = nextIndexBase;
-                nextIndexBase = checked(indexBase + getNumWindows(winSz));
+                nextIndexBase = checked(indexBase + GetNumWindows(winSz));
 
-                var offset = winSz >> offsetExp;
+                var offset = winSz >> _offsetExp;
 
-                int xIndex = clamp(getIndex(centerX, winSz, offset), 0, getNumWindows(winSz, this.w) - 1);
-                int yIndex = clamp(getIndex(centerY, winSz, offset), 0, getNumWindows(winSz, this.h) - 1);
-                if (checkContains(xIndex * offset, winSz, x, x + width) && checkContains(yIndex * offset, winSz, y, y + height))
+                int xIndex = Clamp(GetIndex(centerX, winSz, offset), 0, GetNumWindows(winSz, this._w) - 1);
+                int yIndex = Clamp(GetIndex(centerY, winSz, offset), 0, GetNumWindows(winSz, this._h) - 1);
+                if (CheckContains(xIndex * offset, winSz, x, x + width) && CheckContains(yIndex * offset, winSz, y, y + height))
                 {
-                    return checked(indexBase + yIndex * getNumWindows(winSz, this.w) + xIndex);
+                    return checked(indexBase + yIndex * GetNumWindows(winSz, this._w) + xIndex);
                 }
             }
             return -1;
         }
 
-        public int getNearestWindow(rectangle loc)
+        public int GetNearestWindow(Rectangle loc)
         {
             //precise center point
-            var centerX = loc.x + loc.w / 2;
-            var centerY = loc.y + loc.h / 2;
+            var centerX = loc.X + loc.W / 2;
+            var centerY = loc.Y + loc.H / 2;
 
             int nextIndexBase = 0;
-            foreach (var winSz in winSizes())
+            foreach (var winSz in WinSizes())
             {
                 int indexBase = nextIndexBase;
-                nextIndexBase = checked(indexBase + getNumWindows(winSz));
+                nextIndexBase = checked(indexBase + GetNumWindows(winSz));
 
-                var offset = winSz >> offsetExp;
+                var offset = winSz >> _offsetExp;
 
-                int xIndex = clamp(getIndex(centerX, winSz, offset), 0, getNumWindows(winSz, this.w) - 1);
-                int yIndex = clamp(getIndex(centerY, winSz, offset), 0, getNumWindows(winSz, this.h) - 1);
-                if (checkContains(xIndex * offset, winSz, loc.x, loc.x + loc.w) && checkContains(yIndex * offset, winSz, loc.y, loc.y + loc.h))
+                int xIndex = Clamp(GetIndex(centerX, winSz, offset), 0, GetNumWindows(winSz, this._w) - 1);
+                int yIndex = Clamp(GetIndex(centerY, winSz, offset), 0, GetNumWindows(winSz, this._h) - 1);
+                if (CheckContains(xIndex * offset, winSz, loc.X, loc.X + loc.W) && CheckContains(yIndex * offset, winSz, loc.Y, loc.Y + loc.H))
                 {
-                    return checked(indexBase + yIndex * getNumWindows(winSz, this.w) + xIndex);
+                    return checked(indexBase + yIndex * GetNumWindows(winSz, this._w) + xIndex);
                 }
             }
             return -1;
         }
 
-        public bool getWindowDimensions(int index, out double x, out double y, out double w, out double h)
+        public bool GetWindowDimensions(int index, out double x, out double y, out double w, out double h)
         {
             try
             {
-                var rect = getRectangle(index);
-                x = rect.x;
-                y = rect.y;
-                w = rect.w;
-                h = rect.h;
-                return w < szMax && h < szMax;
+                var rect = GetRectangle(index);
+                x = rect.X;
+                y = rect.Y;
+                w = rect.W;
+                h = rect.H;
+                return w < _szMax && h < _szMax;
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -102,35 +102,35 @@ namespace ObjectDetect
                 return false;
             }
         }
-        public rectangle getRectangle(int index)
+        public Rectangle GetRectangle(int index)
         {
             if (index < 0) throw new ArgumentOutOfRangeException();
-            int index_range = 0;
-            foreach (var winSz in winSizes())
+            int indexRange = 0;
+            foreach (var winSz in WinSizes())
             {
-                int page_index = index - index_range;
-                index_range += getNumWindows(winSz);
-                if (index_range <= index) continue;
+                int pageIndex = index - indexRange;
+                indexRange += GetNumWindows(winSz);
+                if (indexRange <= index) continue;
 
-                int row_width = getNumWindows(winSz, this.w);
+                int rowWidth = GetNumWindows(winSz, this._w);
 
-                int xIndex = page_index % row_width;
-                int yIndex = page_index / row_width;
+                int xIndex = pageIndex % rowWidth;
+                int yIndex = pageIndex / rowWidth;
 
-                var offset = winSz >> offsetExp;
+                var offset = winSz >> _offsetExp;
 
                 var x = offset * xIndex;
                 var y = offset * yIndex;
                 var w = winSz;
                 var h = winSz;
-                return new rectangle(x, y, w, h);
+                return new Rectangle(x, y, w, h);
             }
             throw new ArgumentOutOfRangeException();
         }
 
-        private fixed_point winSize(int size)
+        private FixedPoint WinSize(int size)
         {
-            var sz = winSizes().GetEnumerator();
+            var sz = WinSizes().GetEnumerator();
             for (int i = 0; i < size; i++)
             {
                 sz.MoveNext();
@@ -139,41 +139,41 @@ namespace ObjectDetect
         }
 
         //C# doesn't allow to set floating point modes, but we require absolute repeatability...
-        private IEnumerable<fixed_point> winSizes()
+        private IEnumerable<FixedPoint> WinSizes()
         {
-            fixed_point sz = szMin;
-            while (sz < Math.Min(w,h))
+            FixedPoint sz = _szMin;
+            while (sz < Math.Min(_w,_h))
             {
                 yield return sz;
-                int multiplier = (1 << szExp) + 1;
+                int multiplier = (1 << _szExp) + 1;
                 //int divisor = 1 << stepExp;
-                sz = (sz * multiplier) >> szExp;
+                sz = (sz * multiplier) >> _szExp;
             }
         }
 
-        private int getNumWindows(fixed_point winSz)
+        private int GetNumWindows(FixedPoint winSz)
         {
-            return getNumWindows(winSz, w) * getNumWindows(winSz, h);
+            return GetNumWindows(winSz, _w) * GetNumWindows(winSz, _h);
         }
 
-        private int getNumWindows(fixed_point winSz, int length)
+        private int GetNumWindows(FixedPoint winSz, int length)
         {
             //double availableWidth = (length - winSz);
             //double offset = (winSz / Math.Pow(2, offsetExp));
             //return checked((int)Math.Floor(availableWidth / offset) + 1);
 
             if (length < winSz) throw new ArgumentOutOfRangeException();
-            return ((length / winSz - 1) << offsetExp).Floor() + 1;
+            return ((length / winSz - 1) << _offsetExp).Floor() + 1;
         }
 
-        private int clamp(int val, int lowBound, int highBound)
+        private static int Clamp(int val, int lowBound, int highBound)
         {
             if (val < lowBound) return lowBound;
             if (val > highBound) return highBound;
             return val;
         }
 
-        private static int getIndex(fixed_point center, fixed_point winSz, fixed_point offset)
+        private static int GetIndex(FixedPoint center, FixedPoint winSz, FixedPoint offset)
         {
             //Find ideal coordinate
             var coord = center - winSz / 2;
@@ -183,7 +183,7 @@ namespace ObjectDetect
 
         //Note that this is the opposite of normal bounds checking: the region between lowBound and highBound
         //must fit entirely within the region from location to location+width.
-        private bool checkContains(fixed_point location, fixed_point winSz, fixed_point lowBound, fixed_point highBound)
+        private static bool CheckContains(FixedPoint location, FixedPoint winSz, FixedPoint lowBound, FixedPoint highBound)
         {
             if (location > lowBound) return false;
             if (location + winSz < highBound) return false;
@@ -192,25 +192,25 @@ namespace ObjectDetect
 
         public override int GetHashCode()
         {
- 	         return w ^ h ^ szMin ^ szMax ^ szExp ^ offsetExp;
+ 	         return _w ^ _h ^ _szMin ^ _szMax ^ _szExp ^ _offsetExp;
         }
 
-        internal int getScale(int index)
+        internal int GetScale(int index)
         {
             if (index < 0) throw new ArgumentOutOfRangeException();
-            int scale = 0, index_range = 0;
-            foreach (var winSz in winSizes())
+            int scale = 0, indexRange = 0;
+            foreach (var winSz in WinSizes())
             {
-                index_range += getNumWindows(winSz);
-                if (index_range > index) return scale;
+                indexRange += GetNumWindows(winSz);
+                if (indexRange > index) return scale;
                 scale++;
             }
             throw new ArgumentOutOfRangeException();
         }
 
-        internal fixed_point getZoomLevelAtScale(int scale)
+        internal FixedPoint GetZoomLevelAtScale(int scale)
         {
-            return winSizes().ElementAt(scale) >> offsetExp;
+            return WinSizes().ElementAt(scale) >> _offsetExp;
         }
     }
 }
