@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ObjectDetect
 {
@@ -167,10 +156,7 @@ namespace ObjectDetect
 
         private void MenuItem_Classifier_Train(object sender, RoutedEventArgs e)
         {
-            var positives = getPositiveSamples();
-            var negatives = getNegativeSamples();
-            AdaBoost.ILearner<ImageSample>[] learners = { new LBPImageLearner() };
-            var trainer = new AdaBoost.Trainer<ImageSample>(learners, positives, negatives);
+            Dete
         }
 
         private void MenuItem_Classifier_Save(object sender, RoutedEventArgs e)

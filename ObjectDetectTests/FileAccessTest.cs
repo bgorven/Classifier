@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestProject
+namespace ObjectDetectTests
 {
     [TestClass]
     public class FileAccessTest
@@ -24,7 +24,7 @@ namespace UnitTestProject
             {
                 foreach (var filename in filenames)
                 {
-                    using (System.IO.File.Create(filename)) { };
+                    using (System.IO.File.Create(filename)) { }
 
                     var numBoxes = rand.Next(30);
                     var boxes = new System.Collections.Generic.List<ObjectDetect.rectangle>();
@@ -55,9 +55,9 @@ namespace UnitTestProject
                 {
                     Assert.AreEqual(a, e, a + " " + e);
                     return a;
-                })) ;
+                })) { }
                 return actual;
-            }));
+            })) { }
 
             System.IO.File.Delete(tempFileName);
             foreach (var filename in filenames)

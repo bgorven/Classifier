@@ -1,8 +1,7 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ObjectDetect;
 
-namespace UnitTestProject
+namespace ObjectDetectTests
 {
     [TestClass]
     public class SlidingWindowTest

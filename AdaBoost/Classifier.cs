@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AdaBoost
 {
@@ -30,7 +27,7 @@ namespace AdaBoost
             layers = new List<Layer<Sample>>(prototype.layers);
         }
 
-        private List<Layer<Sample>> layers;
+        private readonly List<Layer<Sample>> layers;
 
         /// <summary>
         /// Adds a specific weak learner to the classifier. Typically called at the end of each training iteration.
@@ -61,6 +58,7 @@ namespace AdaBoost
             float confidence = 0;
             foreach (Layer<Sample> l in layers) {
                 confidence += l.classify(s);
+                if (canEarlyTerminate) break;
             }
 
             return confidence;
@@ -72,12 +70,7 @@ namespace AdaBoost
         /// <returns></returns>
         public override string ToString()
         {
-            string result = "";
-            foreach (var l in layers)
-            {
-                result += l + ";\n";
-            }
-            return result;
+            return layers.Aggregate("", (current, l) => current + (l + ";\n"));
         }
     }
 }

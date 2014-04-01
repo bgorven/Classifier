@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AdaBoost;
+﻿using AdaBoost;
 
-namespace ConsoleTrainer
+namespace Program
 {
     struct Point : ISample
     {

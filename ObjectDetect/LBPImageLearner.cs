@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
@@ -22,7 +21,7 @@ namespace ObjectDetect
 
         public LBPImageLearner()
         {
-            Configuration.tryParse(getPossibleParams().First(), out this.config);
+            this.config = Configuration.Parse(getPossibleParams().First());
             this.sample = null;
             this.integralImage = null;
         }
@@ -47,13 +46,15 @@ namespace ObjectDetect
                 this.bucket = bucket;
             }
 
-            internal static bool tryParse(string configString, out Configuration config)
+            internal static Configuration Parse(string configString)
             {
                 var c = configString.Split(',');
                 byte scale = 0, bucket = 0;
-                bool retVal = c.Length == 2 && byte.TryParse(c[0], out scale) && byte.TryParse(c[1], out bucket);
-                config = new Configuration(scale, bucket);
-                return retVal;
+                if (c.Length != 2 || !byte.TryParse(c[0], out scale) || !byte.TryParse(c[1], out bucket))
+                {
+                    throw new ArgumentException();
+                }
+                return new Configuration(scale, bucket);
             }
 
             public override string ToString()
@@ -68,7 +69,7 @@ namespace ObjectDetect
             //int[] buckets = new int[(1 << Configuration.numSurroundingPixels) - 1];
             int retVal = 0;
             for (int x = 0; x < sample.pixelCount; x++) {
-                for (int y = 0; x < sample.pixelCount; y++)
+                for (int y = 0; y < sample.pixelCount; y++)
                 {
                     fixed_point center = getPixelValue(x, y, zoom, sample.location.x, sample.location.y);
                     int bucket = 0;
@@ -132,7 +133,7 @@ namespace ObjectDetect
             return x >= 0 && y >= 0 && x < integralImage.Width && y < integralImage.Height;
         }
 
-        private static ConcurrentDictionary<string, WeakReference<Bitmap<int>>> intImageCache = new ConcurrentDictionary<string, WeakReference<Bitmap<int>>>();
+        private static readonly ConcurrentDictionary<string, WeakReference<Bitmap<int>>> intImageCache = new ConcurrentDictionary<string, WeakReference<Bitmap<int>>>();
 
         public void setSample(ImageSample s)
         {
@@ -201,9 +202,9 @@ namespace ObjectDetect
 
         public AdaBoost.ILearner<ImageSample> withParams(string parameters)
         {
-            var config = this.config;
-            Configuration.tryParse(parameters, out config);
-            return new LBPImageLearner(config, this);
+            Configuration newConfig;
+            newConfig = Configuration.Parse(parameters);
+            return new LBPImageLearner(newConfig, this);
         }
 
         public string getUniqueIDString()

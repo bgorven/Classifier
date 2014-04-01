@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.Caching;
@@ -32,7 +30,6 @@ namespace AdaBoost
         /// will be iterated through as each layer is added.</param>
         /// <param name="positiveSamples">The samples with which to train the learner.</param>
         /// <param name="negativeSamples">The samples with which to train the learner.</param>
-        /// <param name="loss">A loss function, used to choose the best weak learner at each stage.</param>
         public Trainer(IEnumerable<ILearner<Sample>> learners, List<Sample> positiveSamples, List<Sample> negativeSamples)
         {
             this.learners = learners.ToArray();
@@ -49,14 +46,15 @@ namespace AdaBoost
         }
 
         private static int nextCacheIndex = 0;
-        private int cacheIndex;
+        private readonly int cacheIndex;
         private static readonly MemoryCache cache = MemoryCache.Default;
 
-        TrainingSample<Sample>[] positiveSamples, negativeSamples;
+        readonly TrainingSample<Sample>[] positiveSamples;
+        readonly TrainingSample<Sample>[] negativeSamples;
 
-        private Classifier<Sample> classifier;
+        private readonly Classifier<Sample> classifier;
 
-        ILearner<Sample>[] learners;
+        readonly ILearner<Sample>[] learners;
 
 
         /// <summary>
@@ -118,7 +116,7 @@ namespace AdaBoost
             return (l + l / 64) > r && (l - l / 64) < r;
         }
 
-        private Object bestLock = new Object();
+        private readonly Object bestLock = new Object();
         private KeyValuePair<Layer<Sample>, float[]>? bestLearner;
         private float bestLoss = float.PositiveInfinity;
         private float prevLoss = float.PositiveInfinity;
@@ -215,9 +213,9 @@ namespace AdaBoost
 
         private struct LayerHolder
         {
-            public float loss;
-            public Layer<Sample> layer;
-            public float[] values;
+            public readonly float loss;
+            public readonly Layer<Sample> layer;
+            public readonly float[] values;
 
             public LayerHolder(float l, Layer<Sample> L, float[] v)
             {
@@ -275,8 +273,7 @@ namespace AdaBoost
             while (threshold < float.PositiveInfinity)
             {
                 {
-                    int i;
-                    i = 0;
+                    int i = 0;
                     foreach (var s in positiveSamples) positiveCorrect[i++] = outputs[s.index] > threshold;
                     i = 0;
                     foreach (var s in negativeSamples) negativeCorrect[i++] = outputs[s.index] <= threshold;
@@ -323,8 +320,7 @@ namespace AdaBoost
                 }
 
 
-                float next = float.PositiveInfinity;
-                foreach (var v in outputs) if (v > threshold) next = Math.Min(v, next);
+                var next = outputs.Aggregate(float.PositiveInfinity, (min, i) => (i > threshold && i < min) ? i : min);
                 threshold = next;
             }
 

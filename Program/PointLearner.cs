@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AdaBoost;
+using ConsoleTrainer;
 
-namespace ConsoleTrainer
+namespace Program
 {
     struct PointLearner : AdaBoost.ILearner<Point>
     {

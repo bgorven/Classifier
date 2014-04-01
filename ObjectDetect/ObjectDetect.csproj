@@ -56,11 +56,11 @@
     </ApplicationDefinition>
     <Compile Include="Bitmap.cs" />
     <Compile Include="Detector.cs" />
-    <Compile Include="GridDefinitionExtension.cs" />
     <Compile Include="ImageSample.cs" />
     <Compile Include="LBPImageLearner.cs" />
     <Compile Include="MainWindow_Helpers.cs" />
     <Compile Include="fixed_point.cs" />
+    <Compile Include="MarkupExtensions\GridDefinitionExtension.cs" />
     <Compile Include="rectangle.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>

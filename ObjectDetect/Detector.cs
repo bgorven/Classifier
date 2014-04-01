@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AdaBoost;
 using ObjectDetect.Properties;
 
@@ -14,28 +12,28 @@ namespace ObjectDetect
 
         public Detector(List<FileAccess.FileEntry> fileList, int numPositive, int numNegative)
         {
-            var positives = getPositiveSamples(fileList, numPositive);
+            var positives = getPositiveSamples(fileList, numPositive).ToList();
             if (numNegative <= 0) numNegative = positives.Count;
-            var negatives = getNegativeSamples(fileList, numNegative);
+            var negatives = getNegativeSamples(fileList, numNegative).ToList();
 
             trainer = new Trainer<ImageSample>(new LBPImageLearner[] { new LBPImageLearner() }, positives, negatives);
         }
 
-        private List<ImageSample> getPositiveSamples(List<FileAccess.FileEntry> fileList, int numPositive)
+        public void Train(int numLayers)
         {
-            var list = new List<ImageSample>();
-            foreach (var p in fileList)
+            for (; numLayers > 0; numLayers--)
             {
-                var window = new SlidingWindow(p.Width, p.Height, Settings.Default.minRectSize, Settings.Default.maxRectSize, Settings.Default.rectSizeStep, Settings.Default.rectSlideStep);
-                foreach (var rect in p.Rectangles)
-                {
-                    list.Add(new ImageSample(p.FileName, window.getNearestWindow(rect), window));
-                }
+                trainer.addLayer();
             }
-            return list;
+        } 
+
+        internal static IEnumerable<ImageSample> getPositiveSamples(List<FileAccess.FileEntry> fileList, int numPositive)
+        {
+            return (from file in fileList from rect in file.Rectangles 
+                    select new ImageSample(file.FileName, file.Window.getNearestWindow(rect), file.Window));
         }
 
-        private List<ImageSample> getNegativeSamples(List<FileAccess.FileEntry> fileList, int numNegative)
+        internal static IEnumerable<ImageSample> getNegativeSamples(List<FileAccess.FileEntry> fileList, int numNegative)
         {
             throw new NotImplementedException();
         }

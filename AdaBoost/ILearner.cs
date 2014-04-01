@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace AdaBoost
 {
@@ -35,7 +31,7 @@ namespace AdaBoost
         /// references to the same learner instance, and test each sample many consecutive times,
         /// changing only the parameters each time.
         /// </summary>
-        /// <param name="parameters">A dictionary of parameters to be parsed according to some
+        /// <param name="parameter">A dictionary of parameters to be parsed according to some
         /// predetermined scheme.</param>
         ILearner<Sample> withParams(string parameter);
 

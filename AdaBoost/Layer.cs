@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AdaBoost
+﻿namespace AdaBoost
 {
     internal class Layer<Sample> where Sample : ISample
     {
-        private ILearner<Sample> learner;
+        private readonly ILearner<Sample> learner;
         internal float coefPos, coefNeg;
         internal float threshold;
 

@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ObjectDetect.Properties;
 
@@ -96,7 +91,7 @@ namespace ObjectDetect
 
         private void Canvas_Focus_Rectangle(int imageIndex, int rectIndex)
         {
-            canvas.LayoutTransform = ScaleTransform.Identity;
+            canvas.LayoutTransform = Transform.Identity;
             Canvas_Load_Rectangles(imageIndex);
 
             var rect = fileList[imageIndex].Rectangles[rectIndex];
@@ -283,7 +278,7 @@ namespace ObjectDetect
             }
         }
 
-        private Stack<Tuple<int, rectangle>> undoStack = new Stack<Tuple<int, rectangle>>();
+        private readonly Stack<Tuple<int, rectangle>> undoStack = new Stack<Tuple<int, rectangle>>();
         private void removeRectangle(int fileIndex, int rectangleIndex)
         {
             var removed = fileList[fileIndex].Rectangles[rectangleIndex];
@@ -322,36 +317,6 @@ namespace ObjectDetect
             rectangle = Clamp_Rectangle(rectangle);
             unsavedChangesPresent = true;
             return rectangle;
-        }
-
-        private List<ImageSample> getPositiveSamples()
-        {
-            var samples = new List<ImageSample>();
-
-            foreach (var entry in fileList)
-            {
-                var window = new SlidingWindow(entry.Width, entry.Height, MinRectSize, MaxRectSize, RectSizeStep, RectSlideStep);
-                foreach (var rect in entry.Rectangles)
-                {
-                    samples.Add(new ImageSample(entry.FileName, window.getNearestWindow(rect), window));
-                }
-            }
-
-            return samples;
-        }
-
-        private List<ImageSample> getNegativeSamples()
-        {
-            var samples = new List<ImageSample>();
-
-            foreach (var entry in fileList)
-            {
-                var window = new SlidingWindow(entry.Width, entry.Height, MinRectSize, MaxRectSize, RectSizeStep, RectSlideStep);
-                
-                //TODO
-            }
-
-            return samples;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
@@ -13,14 +12,13 @@ namespace ObjectDetect
         {
             public readonly string FileName;
             public readonly List<rectangle> Rectangles;
-            public readonly int Width, Height;
+            public readonly SlidingWindow Window;
 
-            public FileEntry(string file, List<rectangle> rectangles, int width, int height)
+            public FileEntry(string file, List<rectangle> rectangles, int width, int height, int startSize, int endSize, int stepSize, int offsetStepSize)
             {
                 FileName = file;
                 Rectangles = rectangles;
-                Width = width;
-                Height = height;
+                Window = new SlidingWindow(width, height, startSize, endSize, stepSize, offsetStepSize);
             }
         }
 
@@ -33,9 +31,7 @@ namespace ObjectDetect
             {
                 using (var dataFile = new StreamReader(dataFileName))
                 {
-                    string directory = Path.GetDirectoryName(dataFileName);
-                    string fileName = null;
-                    int width, height;
+                    string directory = Path.GetDirectoryName(dataFileName) ?? "";
                     //SlidingWindow imageWindow = new SlidingWindow(imageWidth, imageHeight, smallestWindow, biggestWindow, windowStep, offsetStep);
 
                     int lineNo = -1;
@@ -43,6 +39,8 @@ namespace ObjectDetect
                     {
                         lineNo++;
                         var words = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                        string fileName;
+                        int width, height;
                         if (words.Length < 2) continue;
                         else
                         {
@@ -90,7 +88,7 @@ namespace ObjectDetect
                             //}
                         }
 
-                        fileList.Add(new FileEntry(fileName, samples, width, height));
+                        fileList.Add(new FileEntry(fileName, samples, width, height, Properties.Settings.Default.minRectSize, Properties.Settings.Default.maxRectSize, Properties.Settings.Default.rectSizeStep, Properties.Settings.Default.rectSlideStep));
                     }
                 }
             }
@@ -107,11 +105,7 @@ namespace ObjectDetect
         {
             using (var dataFile = new StreamWriter(dataFileName))
             {
-                int maxFilenameLength = 0;
-                foreach (var line in fileList)
-                {
-                    maxFilenameLength = Math.Max(maxFilenameLength, Path.GetFileName(line.FileName).Length);
-                }
+                int maxFilenameLength = fileList.Select(line => Path.GetFileName(line.FileName).Length).Max();
 
                 int padding = (maxFilenameLength / rectStringWidth + 1) * rectStringWidth;
 

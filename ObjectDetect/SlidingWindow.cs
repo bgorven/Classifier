@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ObjectDetect
 {
@@ -45,11 +43,11 @@ namespace ObjectDetect
             var centerX = x + (fixed_point)width / 2;
             var centerY = y + (fixed_point)height / 2;
 
-            int index_base = 0, next_index_base = 0;
+            int nextIndexBase = 0;
             foreach (var winSz in winSizes())
             {
-                index_base = next_index_base;
-                next_index_base = checked(index_base + getNumWindows(winSz));
+                int indexBase = nextIndexBase;
+                nextIndexBase = checked(indexBase + getNumWindows(winSz));
 
                 var offset = winSz >> offsetExp;
 
@@ -57,7 +55,7 @@ namespace ObjectDetect
                 int yIndex = clamp(getIndex(centerY, winSz, offset), 0, getNumWindows(winSz, this.h) - 1);
                 if (checkContains(xIndex * offset, winSz, x, x + width) && checkContains(yIndex * offset, winSz, y, y + height))
                 {
-                    return checked(index_base + yIndex * getNumWindows(winSz, this.w) + xIndex);
+                    return checked(indexBase + yIndex * getNumWindows(winSz, this.w) + xIndex);
                 }
             }
             return -1;
@@ -69,11 +67,11 @@ namespace ObjectDetect
             var centerX = loc.x + loc.w / 2;
             var centerY = loc.y + loc.h / 2;
 
-            int index_base = 0, next_index_base = 0;
+            int nextIndexBase = 0;
             foreach (var winSz in winSizes())
             {
-                index_base = next_index_base;
-                next_index_base = checked(index_base + getNumWindows(winSz));
+                int indexBase = nextIndexBase;
+                nextIndexBase = checked(indexBase + getNumWindows(winSz));
 
                 var offset = winSz >> offsetExp;
 
@@ -81,7 +79,7 @@ namespace ObjectDetect
                 int yIndex = clamp(getIndex(centerY, winSz, offset), 0, getNumWindows(winSz, this.h) - 1);
                 if (checkContains(xIndex * offset, winSz, loc.x, loc.x + loc.w) && checkContains(yIndex * offset, winSz, loc.y, loc.y + loc.h))
                 {
-                    return checked(index_base + yIndex * getNumWindows(winSz, this.w) + xIndex);
+                    return checked(indexBase + yIndex * getNumWindows(winSz, this.w) + xIndex);
                 }
             }
             return -1;

@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
 using AdaBoost;
-using System.IO;
+using Program;
 
 namespace ConsoleTrainer
 {
@@ -44,7 +42,7 @@ namespace ConsoleTrainer
                         int testErrors = testTrainer(t.getClassifier(), pointsPos, pointsNeg);
                         int veriErrors = testTrainer(t.getClassifier());
 
-                        if (testErrors == 0) convergence++;
+                        if (testErrors == prev) convergence++;
                         else convergence = 0;
                         if (convergence > 19)
                         {
@@ -140,25 +138,9 @@ namespace ConsoleTrainer
 
         static int testTrainer(Classifier<Sample> c, List<Sample> pointsPos, List<Sample> pointsNeg)
         {
-            int errors = 0;
-            foreach (var s in pointsPos)
-            {
-                if (c.classify(s) <= 0)
-                {
-                    errors++;
-                }
-            }
-            foreach (var s in pointsNeg)
-            {
-                if (c.classify(s) >= 0)
-                {
-                    errors++;
-                }
-            }
-
             //Console.WriteLine(errors / 40f + "% error rate.");
             //Console.WriteLine();
-            return errors;
+            return pointsPos.Count(s => c.classify(s) <= 0) + pointsNeg.Count(s => c.classify(s) >= 0);
         }
 
         static int testTrainer(Classifier<Sample> c)

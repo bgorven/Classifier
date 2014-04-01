@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using AdaBoost;
 
-namespace ConsoleTrainer
+namespace Program
 {
     struct Sample : ISample
     {
@@ -23,7 +22,7 @@ namespace ConsoleTrainer
         public class Learner : ILearner<Sample>
         {
             private int feature;
-            private int numFeatures;
+            private readonly int numFeatures;
             private Sample sample;
 
             private Learner(Learner other)
