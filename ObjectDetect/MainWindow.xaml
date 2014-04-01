@@ -11,8 +11,12 @@
                 <Menu Height="auto" Width="auto"/>
             </MenuItem>
             <MenuItem Header="_Classifier">
-                <MenuItem Header="_Train" Click="MenuItem_Classifier_Open"/>
+                <MenuItem Header="_Train" Click="MenuItem_Classifier_Train"/>
                 <MenuItem Header="_Save" Click="MenuItem_Classifier_Save"/>
+                <Menu Height="auto" Width="auto"/>
+            </MenuItem>
+            <MenuItem Header="_Settings">
+                <MenuItem Header="_Edit" Click="MenuItem_Settings_Edit"/>
                 <Menu Height="auto" Width="auto"/>
             </MenuItem>
         </Menu>

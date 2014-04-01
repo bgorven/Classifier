@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ObjectDetect.Properties;
 
 namespace ObjectDetect
 {
@@ -28,6 +29,26 @@ namespace ObjectDetect
         private const string dataFileExt = ".dat";
         private const string dataFileFilter = "datafiles (.dat)|*.dat";
         private bool unsavedChangesPresent = false;
+
+        private int MinRectSize
+        {
+            get { return Settings.Default.minRectSize; }
+        }
+
+        private int MaxRectSize
+        {
+            get { return Settings.Default.maxRectSize; }
+        }
+
+        private int RectSizeStep
+        {
+            get { return Settings.Default.rectSizeStep; }
+        }
+
+        private int RectSlideStep
+        {
+            get { return Settings.Default.rectSlideStep; }
+        }
 
         private async Task Load_File()
         {
@@ -301,6 +322,36 @@ namespace ObjectDetect
             rectangle = Clamp_Rectangle(rectangle);
             unsavedChangesPresent = true;
             return rectangle;
+        }
+
+        private List<ImageSample> getPositiveSamples()
+        {
+            var samples = new List<ImageSample>();
+
+            foreach (var entry in fileList)
+            {
+                var window = new SlidingWindow(entry.Width, entry.Height, MinRectSize, MaxRectSize, RectSizeStep, RectSlideStep);
+                foreach (var rect in entry.Rectangles)
+                {
+                    samples.Add(new ImageSample(entry.FileName, window.getNearestWindow(rect), window));
+                }
+            }
+
+            return samples;
+        }
+
+        private List<ImageSample> getNegativeSamples()
+        {
+            var samples = new List<ImageSample>();
+
+            foreach (var entry in fileList)
+            {
+                var window = new SlidingWindow(entry.Width, entry.Height, MinRectSize, MaxRectSize, RectSizeStep, RectSlideStep);
+                
+                //TODO
+            }
+
+            return samples;
         }
     }
 }

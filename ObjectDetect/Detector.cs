@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AdaBoost;
+using ObjectDetect.Properties;
 
 namespace ObjectDetect
 {
@@ -25,7 +26,7 @@ namespace ObjectDetect
             var list = new List<ImageSample>();
             foreach (var p in fileList)
             {
-                var window = new SlidingWindow(p.Width, p.Height, 128, 512, 4, 7);
+                var window = new SlidingWindow(p.Width, p.Height, Settings.Default.minRectSize, Settings.Default.maxRectSize, Settings.Default.rectSizeStep, Settings.Default.rectSlideStep);
                 foreach (var rect in p.Rectangles)
                 {
                     list.Add(new ImageSample(p.FileName, window.getNearestWindow(rect), window));

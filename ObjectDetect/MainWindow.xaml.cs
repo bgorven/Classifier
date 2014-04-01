@@ -165,14 +165,31 @@ namespace ObjectDetect
             if (!Confirm_Discard_Changes()) e.Cancel = true;
         }
 
-        private void MenuItem_Classifier_Open(object sender, RoutedEventArgs e)
+        private void MenuItem_Classifier_Train(object sender, RoutedEventArgs e)
         {
-
+            var positives = getPositiveSamples();
+            var negatives = getNegativeSamples();
+            AdaBoost.ILearner<ImageSample>[] learners = { new LBPImageLearner() };
+            var trainer = new AdaBoost.Trainer<ImageSample>(learners, positives, negatives);
         }
 
         private void MenuItem_Classifier_Save(object sender, RoutedEventArgs e)
         {
+            
+        }
 
+        private void MenuItem_Settings_Edit(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow {Owner = this};
+            var success = settingsWindow.ShowDialog() ?? false;
+            if (success)
+            {
+                Properties.Settings.Default.Save();
+            }
+            else
+            {
+                Properties.Settings.Default.Reload();
+            }
         }
     }
 }

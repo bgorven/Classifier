@@ -1,0 +1,35 @@
+﻿<Window x:Class="ObjectDetect.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:me="clr-namespace:ObjectDetect.MarkupExtensions"
+        xmlns:properties="clr-namespace:ObjectDetect.Properties"
+		ShowInTaskbar="False"
+		WindowStartupLocation="CenterOwner"
+        Title="Settings" Height="300" Width="300">
+    <Grid Name="SettingsGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Name="MinWinRow" Height="auto"/>
+            <RowDefinition Name="MaxWinRow" Height="auto"/>
+            <RowDefinition Name="SizeStepRow" Height="auto"/>
+            <RowDefinition Name="SlideStepRow" Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Name="ButtonRow" Height="auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" Name="LabelCol"/>
+            <ColumnDefinition Width="*" Name="TextCol"/>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="{me:GridDefinition MinWinRow}" Grid.Column="{me:GridDefinition LabelCol}">Minimum Window Size</Label>
+        <Label Grid.Row="{me:GridDefinition MaxWinRow}" Grid.Column="{me:GridDefinition LabelCol}">Maximum Window Size</Label>
+        <Label Grid.Row="{me:GridDefinition SizeStepRow}" Grid.Column="{me:GridDefinition LabelCol}">Window Size Step</Label>
+        <Label Grid.Row="{me:GridDefinition SlideStepRow}" Grid.Column="{me:GridDefinition LabelCol}">Window Slide Step</Label>
+        <TextBox Grid.Row="{me:GridDefinition MinWinRow}" Grid.Column="{me:GridDefinition TextCol}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=minRectSize, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
+        <TextBox Grid.Row="{me:GridDefinition MaxWinRow}" Grid.Column="{me:GridDefinition TextCol}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=maxRectSize, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
+        <TextBox Grid.Row="{me:GridDefinition SizeStepRow}" Grid.Column="{me:GridDefinition TextCol}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=rectSizeStep, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
+        <TextBox Grid.Row="{me:GridDefinition SlideStepRow}" Grid.Column="{me:GridDefinition TextCol}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=rectSlideStep, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
+        <UniformGrid Grid.Row="{me:GridDefinition ButtonRow}" HorizontalAlignment="Right" Grid.ColumnSpan="2" Rows="1" Columns="2">
+            <Button Name="OkButton" Content="_OK" IsDefault="True" Click="okButton_Click" Margin="5"/>
+            <Button Name="CancelButton" Content="_Cancel" IsCancel="True" MinWidth="85" Margin="5"/>
+        </UniformGrid>
+    </Grid>
+</Window>
