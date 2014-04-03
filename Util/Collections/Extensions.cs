@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Util.Collections
 {
@@ -14,6 +12,7 @@ namespace Util.Collections
         /// <param name="collection">The sequence to iterate.</param>
         public static void Apply<T>(this IEnumerable<T> collection)
         {
+// ReSharper disable once UnusedVariable
             foreach (var element in collection) { }
         }
 
