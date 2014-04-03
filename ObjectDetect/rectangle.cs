@@ -13,17 +13,17 @@ namespace ObjectDetect
 
         public Rectangle(int x, int y, int w, int h)
         {
-            this.X = x;
-            this.Y = y;
-            this.W = w;
-            this.H = h;
+            X = x;
+            Y = y;
+            W = w;
+            H = h;
         }
         public Rectangle(double x, double y, double w, double h)
         {
-            this.X = (FixedPoint)x;
-            this.Y = (FixedPoint)y;
-            this.W = (FixedPoint)w;
-            this.H = (FixedPoint)h;
+            X = (FixedPoint)x;
+            Y = (FixedPoint)y;
+            W = (FixedPoint)w;
+            H = (FixedPoint)h;
         }
     }
 }

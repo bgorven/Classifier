@@ -8,10 +8,10 @@
 
         internal Layer(ILearner<TSample> learner, float coefPos, float coefNeg, float threshold)
         {
-            this._learner = learner;
-            this.CoefPos = coefPos;
-            this.CoefNeg = coefNeg;
-            this.Threshold = threshold;
+            _learner = learner;
+            CoefPos = coefPos;
+            CoefNeg = coefNeg;
+            Threshold = threshold;
         }
 
         internal float Classify(TSample s)

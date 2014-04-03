@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using AdaBoost;
 
 namespace Program
@@ -14,22 +13,22 @@ namespace Program
         {
             try
             {
-                for (int noise = 0; noise < 2; noise++)
+                for (var noise = 0; noise < 2; noise++)
                 {
-                    double error = 0.05 * noise;
+                    var error = 0.05 * noise;
 
                     List<Sample> pointsPos, pointsNeg;
 
-                    int flippedLabels = GenerateSamples(error, out pointsPos, out pointsNeg);
+                    var flippedLabels = GenerateSamples(error, out pointsPos, out pointsNeg);
 
-                    Trainer<Sample> t = new Trainer<Sample>(new AdaBoost.ILearner<Sample>[] { new Sample.Learner(21) }, pointsPos, pointsNeg);
+                    var t = new Trainer<Sample>(new ILearner<Sample>[] { new Sample.Learner(21) }, pointsPos, pointsNeg);
 
-                    int convergence = 0;
-                    int prev = 0;
+                    var convergence = 0;
+                    var prev = 0;
                     Console.WriteLine("Noise: " + error + " (" + flippedLabels + " label errors)");
-                    for (int i = 0; i < 1000; i++)
+                    for (var i = 0; i < 1000; i++)
                     {
-                        float cost = t.AddLayer();
+                        var cost = t.AddLayer();
 
                         if (float.IsNaN(cost))
                         {
@@ -38,8 +37,8 @@ namespace Program
                         }
 
                         //Console.WriteLine("Loss = " + (float)cost);
-                        int testErrors = TestTrainer(t.Classifier, pointsPos, pointsNeg);
-                        int veriErrors = TestTrainer(t.Classifier);
+                        var testErrors = TestTrainer(t.Classifier, pointsPos, pointsNeg);
+                        var veriErrors = TestTrainer(t.Classifier);
 
                         if (testErrors == prev) convergence++;
                         else convergence = 0;
@@ -65,7 +64,7 @@ namespace Program
 
         private static int GenerateSamples(double error, out List<Sample> pointsPos, out List<Sample> pointsNeg)
         {
-            int flippedLabels = 0;
+            var flippedLabels = 0;
             pointsPos = new List<Sample>();
             pointsNeg = new List<Sample>();
 
@@ -79,16 +78,16 @@ namespace Program
 
         private static Sample Penalisers(bool pos)
         {
-            Sample s = new Sample(21);
-            for (int j = 0; j < 11; j++)
+            var s = new Sample(21);
+            for (var j = 0; j < 11; j++)
             {
-                int loc = Rand.Next(j + 1);
+                var loc = Rand.Next(j + 1);
                 s.Features[j] = s.Features[loc];
                 s.Features[loc] = (pos ^ j > 4) ? 1 : -1;
             }
-            for (int j = 11; j < 21; j++)
+            for (var j = 11; j < 21; j++)
             {
-                int loc = Rand.Next(j - 10);
+                var loc = Rand.Next(j - 10);
                 s.Features[j] = s.Features[11 + loc];
                 s.Features[11 + loc] = (pos ^ j > 16) ? 1 : -1;
             }
@@ -97,8 +96,8 @@ namespace Program
 
         private static Sample Pullers(bool pos)
         {
-            Sample s = new Sample(21);
-            for (int j = 0; j < 21; j++)
+            var s = new Sample(21);
+            for (var j = 0; j < 21; j++)
             {
                 s.Features[j] = (pos ^ j > 10) ? 1 : -1;
             }
@@ -108,7 +107,7 @@ namespace Program
         private static Sample LargeMargins(bool pos)
         {
             var s = new Sample(21);
-            for (int j = 0; j < 21; j++)
+            for (var j = 0; j < 21; j++)
             {
                 s.Features[j] = pos ? 1 : -1;
             }
@@ -117,11 +116,11 @@ namespace Program
 
         private static int AddSamples(int count, Func<bool, Sample> featureGenerator, double error, List<Sample> pointsPos, List<Sample> pointsNeg)
         {
-            int flippedLabels = 0;
-            for (int i = 0; i < count; i++)
+            var flippedLabels = 0;
+            for (var i = 0; i < count; i++)
             {
-                bool label = Rand.NextDouble() < 0.5;
-                Sample s = featureGenerator(label);
+                var label = Rand.NextDouble() < 0.5;
+                var s = featureGenerator(label);
                 if (Rand.NextDouble() < error)
                 {
                     label = !label;
@@ -132,8 +131,6 @@ namespace Program
             }
             return flippedLabels;
         }
-
-        static Encoding _encoding = new UnicodeEncoding();
 
         static int TestTrainer(Classifier<Sample> c, IEnumerable<Sample> pointsPos, IEnumerable<Sample> pointsNeg)
         {

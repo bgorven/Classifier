@@ -5,8 +5,8 @@ namespace AdaBoost
     /// <summary>
     /// Weak learner; outputs some hypothesis about a given sample.
     /// </summary>
-    /// <typeparam name="Sample">The type of sample that can be classified by this learner.</typeparam>
-    public interface ILearner<Sample> where Sample : ISample
+    /// <typeparam name="TSample">The type of sample that can be classified by this learner.</typeparam>
+    public interface ILearner<in TSample> where TSample : ISample
     {
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace AdaBoost
         /// allocated for the previous sample.
         /// </summary>
         /// <param name="s">The sample, which may be the same as the the previously set sample.</param>
-        void SetSample(Sample s);
+        void SetSample(TSample s);
 
         /// <summary>
         /// Sets parameters for the following classification. A boost classifier may contain many
@@ -33,7 +33,7 @@ namespace AdaBoost
         /// </summary>
         /// <param name="parameter">A dictionary of parameters to be parsed according to some
         /// predetermined scheme.</param>
-        ILearner<Sample> WithParams(string parameter);
+        ILearner<TSample> WithParams(string parameter);
 
         /// <summary>
         /// For improved performance, the output of this learner may be cached. This method allows the learner

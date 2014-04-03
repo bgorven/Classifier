@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using AdaBoost;
 
 namespace ObjectDetect
 {
-    class LBPImageLearner : AdaBoost.ILearner<ImageSample>
+    class LBPImageLearner : ILearner<ImageSample>
     {
         private ImageSample _sample;
         private readonly Configuration _config;
@@ -14,16 +16,16 @@ namespace ObjectDetect
 
         private LBPImageLearner(Configuration config, LBPImageLearner lbpImageLearner)
         {
-            this._config = config;
-            this._sample = lbpImageLearner._sample;
-            this._integralImage = lbpImageLearner._integralImage;
+            _config = config;
+            _sample = lbpImageLearner._sample;
+            _integralImage = lbpImageLearner._integralImage;
         }
 
         public LBPImageLearner()
         {
-            this._config = Configuration.Parse(GetPossibleParams().First());
-            this._sample = null;
-            this._integralImage = null;
+            _config = Configuration.Parse(GetPossibleParams().First());
+            _sample = null;
+            _integralImage = null;
         }
 
         private struct Configuration
@@ -42,8 +44,8 @@ namespace ObjectDetect
 
             internal Configuration(int scale, int bucket)
             {
-                this.RelativeScale = scale;
-                this.Bucket = bucket;
+                RelativeScale = scale;
+                Bucket = bucket;
             }
 
             internal static Configuration Parse(string configString)
@@ -65,15 +67,15 @@ namespace ObjectDetect
 
         public float Classify()
         {
-            FixedPoint zoom = _sample.GetZoomLevelAtScale(_sample.Scale + _config.RelativeScale);
+            var zoom = _sample.GetZoomLevelAtScale(_sample.Scale + _config.RelativeScale);
             //int[] buckets = new int[(1 << Configuration.numSurroundingPixels) - 1];
-            int retVal = 0;
-            for (int x = 0; x < _sample.PixelCount; x++) {
-                for (int y = 0; y < _sample.PixelCount; y++)
+            var retVal = 0;
+            for (var x = 0; x < _sample.PixelCount; x++) {
+                for (var y = 0; y < _sample.PixelCount; y++)
                 {
-                    FixedPoint center = GetPixelValue(x, y, zoom, _sample.Location.X, _sample.Location.Y);
-                    int bucket = 0;
-                    for (int i = 0; i < Configuration.NumSurroundingPixels; i++)
+                    var center = GetPixelValue(x, y, zoom, _sample.Location.X, _sample.Location.Y);
+                    var bucket = 0;
+                    for (var i = 0; i < Configuration.NumSurroundingPixels; i++)
                     {
                         bucket <<= 1;
                         if (GetSurroundingPixVal(i, x, y, zoom, _sample.Location.X, _sample.Location.Y) > center)
@@ -96,12 +98,12 @@ namespace ObjectDetect
 
         private FixedPoint GetPixelValue(int x, int y, FixedPoint zoom, FixedPoint xBase, FixedPoint yBase)
         {
-            FixedPoint xloc = xBase + x * zoom - 1;
-            FixedPoint yloc = xBase + x * zoom - 1;
-            FixedPoint topLeft = Interpolate(xloc, yloc);
-            FixedPoint lowLeft = Interpolate(xloc, yloc + zoom);
-            FixedPoint topRight = Interpolate(xloc + zoom, yloc);
-            FixedPoint lowRight = Interpolate(xloc + zoom, yloc + zoom);
+            var xloc = xBase + x * zoom - 1;
+            var yloc = xBase + x * zoom - 1;
+            var topLeft = Interpolate(xloc, yloc);
+            var lowLeft = Interpolate(xloc, yloc + zoom);
+            var topRight = Interpolate(xloc + zoom, yloc);
+            var lowRight = Interpolate(xloc + zoom, yloc + zoom);
             return lowRight - topRight - lowLeft + topLeft;
         }
 
@@ -137,14 +139,14 @@ namespace ObjectDetect
 
         public void SetSample(ImageSample s)
         {
-            if (!this._sample.FileEquals(s))
+            if (!_sample.FileEquals(s))
             {
                 var entry = IntImageCache.GetOrAdd(s.FileName, new WeakReference<Bitmap<int>>(null));
                 lock (entry)
                 {
                     if (!entry.TryGetTarget(out _integralImage))
                     {
-                        var image = new System.Drawing.Bitmap(s.FileName);
+                        var image = new Bitmap(s.FileName);
 
                         //TODO
                         //
@@ -168,22 +170,22 @@ namespace ObjectDetect
                         //sum each row independently
                         Parallel.For(0, image.Height, y =>
                         {
-                            int accumulator = 0;
-                            int rowBase = y * stride;
+                            var accumulator = 0;
+                            var rowBase = y * stride;
 
-                            for (int x = 0; x < image.Width; x++)
+                            for (var x = 0; x < image.Width; x++)
                             {
                                 accumulator += (int)Math.Round(image.GetPixel(x, y).GetBrightness() * 256);
                                 dst[rowBase + x] = accumulator;
                             }
                         });
                         //sum columns
-                        for (int y = 1; y < image.Height; y++)
+                        for (var y = 1; y < image.Height; y++)
                         {
-                            int rowBase = y * stride;
-                            int prevRow = (y - 1) * stride;
+                            var rowBase = y * stride;
+                            var prevRow = (y - 1) * stride;
 
-                            for (int x = 0; x < image.Width; x++)
+                            for (var x = 0; x < image.Width; x++)
                             {
                                 var prevSum = dst[prevRow + x];
                                 var thisSum = dst[rowBase + x];
@@ -197,10 +199,10 @@ namespace ObjectDetect
                     }
                 }
             }
-            this._sample = s;
+            _sample = s;
         }
 
-        public AdaBoost.ILearner<ImageSample> WithParams(string parameters)
+        public ILearner<ImageSample> WithParams(string parameters)
         {
             return new LBPImageLearner(Configuration.Parse(parameters), this);
         }
@@ -217,9 +219,9 @@ namespace ObjectDetect
 
         public IEnumerable<string> GetPossibleParams()
         {
-            for (int scaleLevel = 0; scaleLevel < Configuration.NumRelativeScaleLevels; scaleLevel++)
+            for (var scaleLevel = 0; scaleLevel < Configuration.NumRelativeScaleLevels; scaleLevel++)
             {
-                for (int bucket = 0; bucket < (1 << Configuration.NumSurroundingPixels); bucket++)
+                for (var bucket = 0; bucket < (1 << Configuration.NumSurroundingPixels); bucket++)
                 {
                     yield return new Configuration(scaleLevel * Configuration.ScaleChangePerLevel, bucket).ToString();
                 }

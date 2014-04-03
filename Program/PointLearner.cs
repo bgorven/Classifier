@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using AdaBoost;
 
 namespace Program
 {
-    struct PointLearner : AdaBoost.ILearner<Point>
+    struct PointLearner : ILearner<Point>
     {
         private float _rotation;
 
@@ -34,7 +35,7 @@ namespace Program
         public IEnumerable<string> GetPossibleParams()
         {
             const float delta = 1/128f;
-            for (float theta = 0; theta < Math.PI; theta += delta) yield return theta.ToString();
+            for (float theta = 0; theta < Math.PI; theta += delta) yield return theta.ToString(CultureInfo.InvariantCulture);
         }
     }
 }

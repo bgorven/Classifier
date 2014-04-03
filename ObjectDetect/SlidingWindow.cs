@@ -24,12 +24,12 @@ namespace ObjectDetect
         /// offset steps should not be smaller than pixels, thus if the startSize is 64, for instance, offsetStepSize param should not be less than 6.</param>
         public SlidingWindow(int w, int h, int startSize, int endSize, int stepSize, int offsetStepSize)
         {
-            this._w = w;
-            this._h = h;
-            this._szMin = startSize;
-            this._szMax = endSize;
-            this._szExp = stepSize;
-            this._offsetExp = offsetStepSize;
+            _w = w;
+            _h = h;
+            _szMin = startSize;
+            _szMax = endSize;
+            _szExp = stepSize;
+            _offsetExp = offsetStepSize;
         }
 
         public int OffsetStepsPerWindow
@@ -43,19 +43,19 @@ namespace ObjectDetect
             var centerX = x + (FixedPoint)width / 2;
             var centerY = y + (FixedPoint)height / 2;
 
-            int nextIndexBase = 0;
+            var nextIndexBase = 0;
             foreach (var winSz in WinSizes())
             {
-                int indexBase = nextIndexBase;
+                var indexBase = nextIndexBase;
                 nextIndexBase = checked(indexBase + GetNumWindows(winSz));
 
                 var offset = winSz >> _offsetExp;
 
-                int xIndex = Clamp(GetIndex(centerX, winSz, offset), 0, GetNumWindows(winSz, this._w) - 1);
-                int yIndex = Clamp(GetIndex(centerY, winSz, offset), 0, GetNumWindows(winSz, this._h) - 1);
+                var xIndex = Clamp(GetIndex(centerX, winSz, offset), 0, GetNumWindows(winSz, _w) - 1);
+                var yIndex = Clamp(GetIndex(centerY, winSz, offset), 0, GetNumWindows(winSz, _h) - 1);
                 if (CheckContains(xIndex * offset, winSz, x, x + width) && CheckContains(yIndex * offset, winSz, y, y + height))
                 {
-                    return checked(indexBase + yIndex * GetNumWindows(winSz, this._w) + xIndex);
+                    return checked(indexBase + yIndex * GetNumWindows(winSz, _w) + xIndex);
                 }
             }
             return -1;
@@ -67,19 +67,19 @@ namespace ObjectDetect
             var centerX = loc.X + loc.W / 2;
             var centerY = loc.Y + loc.H / 2;
 
-            int nextIndexBase = 0;
+            var nextIndexBase = 0;
             foreach (var winSz in WinSizes())
             {
-                int indexBase = nextIndexBase;
+                var indexBase = nextIndexBase;
                 nextIndexBase = checked(indexBase + GetNumWindows(winSz));
 
                 var offset = winSz >> _offsetExp;
 
-                int xIndex = Clamp(GetIndex(centerX, winSz, offset), 0, GetNumWindows(winSz, this._w) - 1);
-                int yIndex = Clamp(GetIndex(centerY, winSz, offset), 0, GetNumWindows(winSz, this._h) - 1);
+                var xIndex = Clamp(GetIndex(centerX, winSz, offset), 0, GetNumWindows(winSz, _w) - 1);
+                var yIndex = Clamp(GetIndex(centerY, winSz, offset), 0, GetNumWindows(winSz, _h) - 1);
                 if (CheckContains(xIndex * offset, winSz, loc.X, loc.X + loc.W) && CheckContains(yIndex * offset, winSz, loc.Y, loc.Y + loc.H))
                 {
-                    return checked(indexBase + yIndex * GetNumWindows(winSz, this._w) + xIndex);
+                    return checked(indexBase + yIndex * GetNumWindows(winSz, _w) + xIndex);
                 }
             }
             return -1;
@@ -105,17 +105,17 @@ namespace ObjectDetect
         public Rectangle GetRectangle(int index)
         {
             if (index < 0) throw new ArgumentOutOfRangeException();
-            int indexRange = 0;
+            var indexRange = 0;
             foreach (var winSz in WinSizes())
             {
-                int pageIndex = index - indexRange;
+                var pageIndex = index - indexRange;
                 indexRange += GetNumWindows(winSz);
                 if (indexRange <= index) continue;
 
-                int rowWidth = GetNumWindows(winSz, this._w);
+                var rowWidth = GetNumWindows(winSz, _w);
 
-                int xIndex = pageIndex % rowWidth;
-                int yIndex = pageIndex / rowWidth;
+                var xIndex = pageIndex % rowWidth;
+                var yIndex = pageIndex / rowWidth;
 
                 var offset = winSz >> _offsetExp;
 
@@ -131,7 +131,7 @@ namespace ObjectDetect
         private FixedPoint WinSize(int size)
         {
             var sz = WinSizes().GetEnumerator();
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
                 sz.MoveNext();
             }
@@ -145,7 +145,7 @@ namespace ObjectDetect
             while (sz < Math.Min(_w,_h))
             {
                 yield return sz;
-                int multiplier = (1 << _szExp) + 1;
+                var multiplier = (1 << _szExp) + 1;
                 //int divisor = 1 << stepExp;
                 sz = (sz * multiplier) >> _szExp;
             }

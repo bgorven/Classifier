@@ -4,12 +4,12 @@
     {
         public TrainingSample(TSample s, int index, float weight, float actual)
         {
-            this.Sample = s;
-            this.Weight = weight;
-            this.Actual = actual;
-            this.Index = index;
-            this._confidenceP = new KahanSum();
-            this._confidenceN = new KahanSum();
+            Sample = s;
+            Weight = weight;
+            Actual = actual;
+            Index = index;
+            _confidenceP = new KahanSum();
+            _confidenceN = new KahanSum();
         }
 
         public TSample Sample;

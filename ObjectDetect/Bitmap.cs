@@ -12,10 +12,10 @@
 
         public Bitmap(T[] data, int width, int height, int stride)
         {
-            this._data = data;
-            this.Width = width;
-            this.Height = height;
-            this._stride = stride;
+            _data = data;
+            Width = width;
+            Height = height;
+            _stride = stride;
         }
 
         public T this[int x, int y] { get { return _data[y * _stride + x]; } }

@@ -13,9 +13,9 @@ namespace ObjectDetect
 
         public ImageSample(string fileName, int windowIndex, SlidingWindow windowManager)
         {
-            this.FileName = fileName;
-            this.WindowIndex = windowIndex;
-            this.WindowManager = windowManager;
+            FileName = fileName;
+            WindowIndex = windowIndex;
+            WindowManager = windowManager;
         }
 
         public FixedPoint GetZoomLevelAtScale(int scale)

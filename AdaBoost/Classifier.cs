@@ -56,7 +56,7 @@ namespace AdaBoost
         public float Classify(TSample s, bool canEarlyTerminate)
         {
             float confidence = 0;
-            foreach (Layer<TSample> l in _layers) {
+            foreach (var l in _layers) {
                 confidence += l.Classify(s);
                 if (canEarlyTerminate) break;
             }

@@ -18,9 +18,9 @@ namespace AdaBoost
 
         public static KahanSum Sum(IEnumerable<float> vals)
         {
-            KahanSum sum = new KahanSum();
+            var sum = new KahanSum();
 
-            foreach (float val in vals)
+            foreach (var val in vals)
             {
                 sum.Add(val);
             }
@@ -30,7 +30,7 @@ namespace AdaBoost
 
         internal void Add<T>(IEnumerable<T> vals, Func<T, float> function)
         {
-            foreach (T val in vals)
+            foreach (var val in vals)
             {
                 Add(function(val));
             }
@@ -38,7 +38,7 @@ namespace AdaBoost
 
         internal void Add(IEnumerable<float> vals)
         {
-            foreach (float val in vals)
+            foreach (var val in vals)
             {
                 Add(val);
             }
@@ -50,17 +50,16 @@ namespace AdaBoost
             {
                 return;
             }
-            else if (float.IsInfinity(val))
+            if (float.IsInfinity(val))
             {
                 S = val;
+                return;
             }
-            else
-            {
-                float v = val - C;
-                float t = S + v;
-                C = (t - S) - v;
-                S = t;
-            }
+
+            var v = val - C;
+            var t = S + v;
+            C = (t - S) - v;
+            S = t;
         }
     }
 }

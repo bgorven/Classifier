@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using ObjectDetect.Properties;
+using Microsoft.Win32;
+using Path = System.IO.Path;
 
 namespace ObjectDetect
 {
@@ -16,8 +18,8 @@ namespace ObjectDetect
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static readonly DependencyProperty RectLeftProperty = System.Windows.Controls.Canvas.LeftProperty;
-        private static readonly DependencyProperty RectTopProperty = System.Windows.Controls.Canvas.TopProperty;
+        private static readonly DependencyProperty RectLeftProperty = Canvas.LeftProperty;
+        private static readonly DependencyProperty RectTopProperty = Canvas.TopProperty;
 
         private int _fileIndex = 0, _rectangleIndex = 0;
         private List<FileAccess.FileEntry> _fileList;
@@ -25,38 +27,20 @@ namespace ObjectDetect
         private const string DataFileFilter = "datafiles (.dat)|*.dat";
         private bool _unsavedChangesPresent = false;
 
-        private int MinRectSize
-        {
-            get { return Settings.Default.minRectSize; }
-        }
-
-        private int MaxRectSize
-        {
-            get { return Settings.Default.maxRectSize; }
-        }
-
-        private int RectSizeStep
-        {
-            get { return Settings.Default.rectSizeStep; }
-        }
-
-        private int RectSlideStep
-        {
-            get { return Settings.Default.rectSlideStep; }
-        }
-
         private async Task Load_File()
         {
             if (!Confirm_Discard_Changes()) return;
 
-            var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.DefaultExt = DataFileExt;
-            dialog.Filter = DataFileFilter;
+            var dialog = new OpenFileDialog
+            {
+                DefaultExt = DataFileExt, 
+                Filter = DataFileFilter
+            };
             if (dialog.ShowDialog() ?? false)
             {
                 _fileList = await FileAccess.LoadInfo(dialog.FileName);
                 _unsavedChangesPresent = false;
-                if (_fileList.Count() > 0)
+                if (_fileList.Any())
                 {
                     _fileIndex = 0;
                     _rectangleIndex = 0;
@@ -69,9 +53,11 @@ namespace ObjectDetect
 
         private async Task Save_File()
         {
-            var dialog = new Microsoft.Win32.SaveFileDialog();
-            dialog.DefaultExt = DataFileExt;
-            dialog.Filter = DataFileFilter;
+            var dialog = new SaveFileDialog
+            {
+                DefaultExt = DataFileExt, 
+                Filter = DataFileFilter
+            };
             if (dialog.ShowDialog() ?? false)
             {
                 await FileAccess.SaveInfo(dialog.FileName, _fileList);
@@ -124,10 +110,12 @@ namespace ObjectDetect
 
             //if (image.PixelWidth != FileAccess.imageWidth || image.PixelHeight != FileAccess.imageHeight) throw new Exception();
 
-            var bg = new ImageBrush();
-            bg.ImageSource = image;
+            var bg = new ImageBrush
+            {
+                ImageSource = image
+            };
 
-            Title = System.IO.Path.GetFileName(_fileList[imageIndex].FileName) + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
+            Title = Path.GetFileName(_fileList[imageIndex].FileName) + " (" + bg.ImageSource.Width + "x" + bg.ImageSource.Height + ")";
 
             Canvas.Background = bg;
             Canvas.Width = bg.ImageSource.Width;
@@ -156,7 +144,7 @@ namespace ObjectDetect
 
         private async Task<bool> Canvas_Click(MouseButton changedButton)
         {
-            bool handled = false;
+            var handled = false;
             if (changedButton == MouseButton.Left)
             {
                 _fileIndex++;
@@ -190,7 +178,7 @@ namespace ObjectDetect
             return handled;
         }
 
-        public System.Windows.Shapes.Shape InitializeShape(Rectangle rect, System.Windows.Shapes.Shape shape, double scaleX, double scaleY, Brush color)
+        public Shape InitializeShape(Rectangle rect, Shape shape, double scaleX, double scaleY, Brush color)
         {
             shape.SetValue(RectLeftProperty, rect.X * scaleX);
             shape.SetValue(RectTopProperty, rect.Y * scaleY);

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.Caching;
 
 namespace AdaBoost
 {
@@ -26,15 +24,14 @@ namespace AdaBoost
         /// will be iterated through as each layer is added.</param>
         /// <param name="positiveSamples">The samples with which to train the learner.</param>
         /// <param name="negativeSamples">The samples with which to train the learner.</param>
-        public Trainer(IEnumerable<ILearner<TSample>> learners, List<TSample> positiveSamples, List<TSample> negativeSamples)
+        public Trainer(IEnumerable<ILearner<TSample>> learners, IEnumerable<TSample> positiveSamples, IEnumerable<TSample> negativeSamples)
         {
-            this._learners = learners.ToArray();
-            float count = positiveSamples.Count + negativeSamples.Count;
-            this._positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<TSample>(s, i, 1f, 1f))).ToArray();
-            int offset = positiveSamples.Count;
-            this._negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<TSample>(s, i + offset, 1f, -1f))).ToArray();
+            _learners = learners.ToArray();
+            _positiveSamples = (positiveSamples.Select((s, i) => new TrainingSample<TSample>(s, i, 1f, 1f))).ToArray();
+            var offset = _positiveSamples.Length;
+            _negativeSamples = (negativeSamples.Select((s, i) => new TrainingSample<TSample>(s, i + offset, 1f, -1f))).ToArray();
 
-            this.Classifier = new Classifier<TSample>();
+            Classifier = new Classifier<TSample>();
 
         }
 
@@ -70,20 +67,20 @@ namespace AdaBoost
             Array.Sort(_positiveSamples, (l, r) => l.Weight.CompareTo(r.Weight));
             Array.Sort(_negativeSamples, (l, r) => l.Weight.CompareTo(r.Weight));
 
-            if (this._bestLearner.HasValue && _bestLoss < _prevLoss)
+            if (_bestLearner.HasValue && _bestLoss < _prevLoss)
             {
-                var outputs = this._bestLearner.Value.Value;
-                var layer = this._bestLearner.Value.Key;
+                var outputs = _bestLearner.Value.Value;
+                var layer = _bestLearner.Value.Key;
 
                 Classifier.AddLayer(layer);
 
                 //Add new layer's output to each learner's cumulative score, recalculate weight, find highest weight
-                for (int j = 0; j < _positiveSamples.Length; j++)
+                for (var j = 0; j < _positiveSamples.Length; j++)
                 {
                     _positiveSamples[j].AddConfidence(outputs[_positiveSamples[j].Index] > layer.Threshold ? layer.CoefPos : layer.CoefNeg);
                     loss += (_positiveSamples[j].Weight = (float)Math.Exp(-_positiveSamples[j].Confidence));
                 }
-                for (int j = 0; j < _negativeSamples.Length; j++)
+                for (var j = 0; j < _negativeSamples.Length; j++)
                 {
                     _negativeSamples[j].AddConfidence(outputs[_negativeSamples[j].Index] > layer.Threshold ? layer.CoefPos : layer.CoefNeg);
                     loss += (_negativeSamples[j].Weight = (float)Math.Exp(_negativeSamples[j].Confidence));
@@ -117,7 +114,7 @@ namespace AdaBoost
             if (weights.Length != coefSelect.Length) throw new Exception("weights.Length != coefSelect.Length");
 #endif
 
-            for (int i = 0; i < weights.Length; i++)
+            for (var i = 0; i < weights.Length; i++)
             {
                 sum1 += coefSelect[i] ? weights[i] : 0;
                 sum2 += coefSelect[i] ? 0 : weights[i];
@@ -126,8 +123,8 @@ namespace AdaBoost
 
         private void BestConfiguration(ILearner<TSample> learner)
         {
-            string cacheKey = learner.GetUniqueIdString();
-            Dictionary<string, float[]> predictions = _cache[cacheKey];
+            var cacheKey = learner.GetUniqueIdString();
+            var predictions = _cache[cacheKey];
 
             if (predictions == null)
             {
@@ -193,11 +190,12 @@ namespace AdaBoost
 
         private LayerHolder BestLayerSetup(ILearner<TSample> learner, float[] predictions, LayerHolder best)
         {
-            LayerHolder result = OptimizeCoefficients(learner, predictions);
+            var result = OptimizeCoefficients(learner, predictions);
 
 #if DEBUG
             if (float.IsInfinity(result.Loss))
             {
+// ReSharper disable once EmptyStatement
                 ;//let me know
             }
 #endif
@@ -209,37 +207,39 @@ namespace AdaBoost
 
         private LayerHolder OptimizeCoefficients(ILearner<TSample> learner, float[] outputs)
         {
-            float[] positiveWeights = _positiveSamples.Select(s => s.Weight).ToArray();
-            float[] negativeWeights = _negativeSamples.Select(s => s.Weight).ToArray();
+            var positiveWeights = _positiveSamples.Select(s => s.Weight).ToArray();
+            var negativeWeights = _negativeSamples.Select(s => s.Weight).ToArray();
 
-            bool[] positiveCorrect = new bool[_positiveSamples.Length];
-            bool[] negativeCorrect = new bool[_negativeSamples.Length];
+            var positiveCorrect = new bool[_positiveSamples.Length];
+            var negativeCorrect = new bool[_negativeSamples.Length];
 
 #if DEBUG
-            bool perfect = true;
+            var perfect = true;
             foreach (var s in _positiveSamples.Concat(_negativeSamples))
             {
                 learner.SetSample(s.Sample);
+// ReSharper disable CompareOfFloatsByEqualityOperator
                 if (learner.Classify() != outputs[s.Index])
                 {
                     throw new Exception();
                 }
                 perfect &= s.Actual == outputs[s.Index];
+// ReSharper restore CompareOfFloatsByEqualityOperator
             }
 #endif
 
             //Find best bias point, adding one sample at a time to the predicted target set and updating the cost.
             //Note that -cost is the cost of the inverse of the current hypothesis i.e. "all samples are in the target".
-            float bestThres = float.PositiveInfinity;
-            float bestCost = float.PositiveInfinity;
-            float bestPos = float.PositiveInfinity;
-            float bestNeg = float.NegativeInfinity;
-            float threshold = float.NegativeInfinity;
+            var bestThres = float.PositiveInfinity;
+            var bestCost = float.PositiveInfinity;
+            var bestPos = float.PositiveInfinity;
+            var bestNeg = float.NegativeInfinity;
+            var threshold = float.NegativeInfinity;
 
             while (threshold < float.PositiveInfinity)
             {
                 {
-                    int i = 0;
+                    var i = 0;
                     foreach (var s in _positiveSamples) positiveCorrect[i++] = outputs[s.Index] > threshold;
                     i = 0;
                     foreach (var s in _negativeSamples) negativeCorrect[i++] = outputs[s.Index] <= threshold;
@@ -253,18 +253,19 @@ namespace AdaBoost
                 SumWeights(positiveWeights, positiveCorrect, ref sumWeightsPosCorrect, ref sumWeightsPosIncorrect);
                 SumWeights(negativeWeights, negativeCorrect, ref sumWeightsNegCorrect, ref sumWeightsNegIncorrect);
 
-                float coefPos = (float)Math.Log(sumWeightsPosCorrect / sumWeightsNegIncorrect) / 2;
-                float coefNeg = (float)Math.Log(sumWeightsNegCorrect / sumWeightsPosIncorrect) / -2;
+                var coefPos = (float)Math.Log(sumWeightsPosCorrect / sumWeightsNegIncorrect) / 2;
+                var coefNeg = (float)Math.Log(sumWeightsNegCorrect / sumWeightsPosIncorrect) / -2;
 
                 coefPos = float.IsNaN(coefPos) ? 0 : coefPos;
                 coefNeg = float.IsNaN(coefNeg) ? 0 : coefNeg;
 
-                float loss = (float)(sumWeightsPosCorrect * Math.Exp(-coefPos) + sumWeightsNegIncorrect * Math.Exp(coefPos));
+                var loss = (float)(sumWeightsPosCorrect * Math.Exp(-coefPos) + sumWeightsNegIncorrect * Math.Exp(coefPos));
                 loss += (float)(sumWeightsNegCorrect * Math.Exp(coefNeg) + sumWeightsPosIncorrect * Math.Exp(-coefNeg));
 
 #if DEBUG
                 if (!ApproxEqual((float)(sumWeightsNegCorrect + sumWeightsNegIncorrect + sumWeightsPosCorrect + sumWeightsPosIncorrect), 1))
                 {
+// ReSharper disable once EmptyStatement
                     ;
                 }
                 if (!perfect && (float.IsInfinity(coefNeg) || float.IsInfinity(coefPos)))

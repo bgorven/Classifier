@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using AdaBoost;
-using ObjectDetect.Properties;
 
 namespace ObjectDetect
 {
     class Detector
     {
-        private readonly AdaBoost.Trainer<ImageSample> _trainer;
+        private readonly Trainer<ImageSample> _trainer;
 
         public Detector(List<FileAccess.FileEntry> fileList, int numPositive, int numNegative)
         {

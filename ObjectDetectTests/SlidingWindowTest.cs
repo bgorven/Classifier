@@ -14,19 +14,19 @@ namespace ObjectDetectTests
             const int minSize = 128;
             const int maxSize = 256;
             var testee = new SlidingWindow(w, h, minSize, maxSize, 3, 7);
-            int prevIndex = -1;
+            var prevIndex = -1;
 
-            for (int rectSize = minSize - 1; rectSize <= maxSize; rectSize++ )
+            for (var rectSize = minSize - 1; rectSize <= maxSize; rectSize++ )
             {
                 var temp = testee.GetNearestWindow(0, 0, rectSize, rectSize);
                 if (temp <= prevIndex) continue;
-                for (int y = 0; y < h - rectSize; y++)
+                for (var y = 0; y < h - rectSize; y++)
                 {
                     temp = testee.GetNearestWindow(0, y, rectSize, rectSize);
                     if (temp <= prevIndex) continue;
-                    for (int x = 0; x < w - rectSize; x++)
+                    for (var x = 0; x < w - rectSize; x++)
                     {
-                        int index = testee.GetNearestWindow(x, y, rectSize, rectSize);
+                        var index = testee.GetNearestWindow(x, y, rectSize, rectSize);
                         if (index >= 0)
                         {
                             double xout, yout, wout, hout;

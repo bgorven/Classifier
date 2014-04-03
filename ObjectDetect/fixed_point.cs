@@ -9,7 +9,7 @@ namespace ObjectDetect
 
         private FixedPoint(long value)
         {
-            this._value = value;
+            _value = value;
         }
 
         public static implicit operator double(FixedPoint val)
@@ -99,7 +99,7 @@ namespace ObjectDetect
 
         public int Round()
         {
-            return (int)Math.Round((double)this, MidpointRounding.AwayFromZero);
+            return (int)Math.Round(this, MidpointRounding.AwayFromZero);
         }
 
         public override string ToString()

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using ObjectDetect.Properties;
 
 namespace ObjectDetect
 {
@@ -91,7 +93,7 @@ namespace ObjectDetect
             if (_dragLeft || _dragRight) return;
             if (_rectangleHasFocus)
             {
-                int step = 2;
+                var step = 2;
                 if (e.IsRepeat) step = 4;
                 if (e.KeyboardDevice.IsKeyDown(Key.Back))
                 {
@@ -149,7 +151,7 @@ namespace ObjectDetect
             e.Handled = true;
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (!Confirm_Discard_Changes()) e.Cancel = true;
         }
@@ -171,11 +173,11 @@ namespace ObjectDetect
             var success = settingsWindow.ShowDialog() ?? false;
             if (success)
             {
-                Properties.Settings.Default.Save();
+                Settings.Default.Save();
             }
             else
             {
-                Properties.Settings.Default.Reload();
+                Settings.Default.Reload();
             }
         }
     }

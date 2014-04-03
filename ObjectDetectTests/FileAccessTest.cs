@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ObjectDetect;
+using FileAccess = ObjectDetect.FileAccess;
 
 namespace ObjectDetectTests
 {
@@ -12,41 +15,41 @@ namespace ObjectDetectTests
         [TestMethod]
         public async Task LoadInfoTestMethod()
         {
-            Random rand = new Random(24);
+            var rand = new Random(24);
 
-            var tempFileName = System.IO.Path.GetTempFileName();
+            var tempFileName = Path.GetTempFileName();
 
-            string[] filenames = { System.IO.Path.GetTempFileName(), System.IO.Path.GetTempFileName(), System.IO.Path.GetTempFileName() };
+            string[] filenames = { Path.GetTempFileName(), Path.GetTempFileName(), Path.GetTempFileName() };
             
-            var expectedResult = new List<ObjectDetect.FileAccess.FileEntry>();
+            var expectedResult = new List<FileAccess.FileEntry>();
 
-            using (var tempFile = new System.IO.StreamWriter(tempFileName))
+            using (var tempFile = new StreamWriter(tempFileName))
             {
                 foreach (var filename in filenames)
                 {
-                    using (System.IO.File.Create(filename)) { }
+                    using (File.Create(filename)) { }
 
                     var numBoxes = rand.Next(30);
-                    var boxes = new System.Collections.Generic.List<ObjectDetect.Rectangle>();
+                    var boxes = new List<Rectangle>();
 
                     tempFile.Write(filename + " " + numBoxes);
 
-                    for (int i = numBoxes; i > 0; i--)
+                    for (var i = numBoxes; i > 0; i--)
                     {
-                        var box = new ObjectDetect.Rectangle(rand.Next(2000), rand.Next(2000), rand.Next(2000), rand.Next(2000));
+                        var box = new Rectangle(rand.Next(2000), rand.Next(2000), rand.Next(2000), rand.Next(2000));
 
                         boxes.Add(box);
 
                         tempFile.Write((" " + box.Left + " " + box.Top + " " + box.Width + " " + box.Height).PadRight(20));
                     }
 
-                    expectedResult.Add(new ObjectDetect.FileAccess.FileEntry(filename, boxes, 5184, 3456, 128, 512, 4, 6));
+                    expectedResult.Add(new FileAccess.FileEntry(filename, boxes, 5184, 3456, 128, 512, 4, 6));
 
                     tempFile.WriteLine();
                 }
             }
 
-            var result = await ObjectDetect.FileAccess.LoadInfo(tempFileName);
+            var result = await FileAccess.LoadInfo(tempFileName);
 
             foreach (var _ in result.Zip(expectedResult, (actual, expected) =>
             {
@@ -59,7 +62,7 @@ namespace ObjectDetectTests
                 return actual;
             })) { }
 
-            System.IO.File.Delete(tempFileName);
+            File.Delete(tempFileName);
             foreach (var filename in filenames)
             {
                 var tryDelete = true;
@@ -67,10 +70,10 @@ namespace ObjectDetectTests
                 {
                     try
                     {
-                        System.IO.File.Delete(filename);
+                        File.Delete(filename);
                         tryDelete = false;
                     }
-                    catch (System.IO.IOException)
+                    catch (IOException)
                     {
                         tryDelete = true;
                     }

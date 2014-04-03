@@ -2,14 +2,8 @@
 //and http://stackoverflow.com/questions/19232491/wpf-markupextension-and-rowdefinition-results-in-notimplementedexception
 using System;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Markup;
-using System.Xaml;
 
 namespace ObjectDetect.MarkupExtensions
 {

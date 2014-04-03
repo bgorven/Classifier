@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
+using System.Windows;
+using ObjectDetect.Properties;
 
 namespace ObjectDetect
 {
@@ -25,17 +29,17 @@ namespace ObjectDetect
         //public const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
         public static async Task<List<FileEntry>> LoadInfo(string dataFileName)
         {
-            List<FileEntry> fileList = new List<FileEntry>();
+            var fileList = new List<FileEntry>();
 
             try
             {
                 using (var dataFile = new StreamReader(dataFileName))
                 {
-                    string directory = Path.GetDirectoryName(dataFileName) ?? "";
+                    var directory = Path.GetDirectoryName(dataFileName) ?? "";
                     //SlidingWindow imageWindow = new SlidingWindow(imageWidth, imageHeight, smallestWindow, biggestWindow, windowStep, offsetStep);
 
-                    int lineNo = -1;
-                    for (string line = await dataFile.ReadLineAsync(); line != null; line = await dataFile.ReadLineAsync())
+                    var lineNo = -1;
+                    for (var line = await dataFile.ReadLineAsync(); line != null; line = await dataFile.ReadLineAsync())
                     {
                         lineNo++;
                         var words = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
@@ -47,7 +51,7 @@ namespace ObjectDetect
                             fileName = Path.Combine(directory, words[0]);
                             try
                             {
-                                using (var image = new System.Drawing.Bitmap(fileName))
+                                using (var image = new Bitmap(fileName))
                                 {
                                     width = image.Width;
                                     height = image.Height;
@@ -55,8 +59,8 @@ namespace ObjectDetect
                             }
                             catch (FileNotFoundException)
                             {
-                                var result = System.Windows.MessageBox.Show("\"" + words[0] + "\" not found in \"" + directory + "\"", fileName + " Not Found", System.Windows.MessageBoxButton.OKCancel);
-                                if (result == System.Windows.MessageBoxResult.Cancel) return fileList;
+                                var result = MessageBox.Show("\"" + words[0] + "\" not found in \"" + directory + "\"", fileName + " Not Found", MessageBoxButton.OKCancel);
+                                if (result == MessageBoxResult.Cancel) return fileList;
                                 continue;
                             }
                         }
@@ -69,7 +73,7 @@ namespace ObjectDetect
 
                         var samples = new List<Rectangle>(numSamples);
 
-                        for (int i = 0; i < numSamples; i++)
+                        for (var i = 0; i < numSamples; i++)
                         {
                             const int xbase = 2, ybase = 3, wbase = 4, hbase = 5;
                             int x, y, w, h;
@@ -88,7 +92,7 @@ namespace ObjectDetect
                             //}
                         }
 
-                        fileList.Add(new FileEntry(fileName, samples, width, height, Properties.Settings.Default.minRectSize, Properties.Settings.Default.maxRectSize, Properties.Settings.Default.rectSizeStep, Properties.Settings.Default.rectSlideStep));
+                        fileList.Add(new FileEntry(fileName, samples, width, height, Settings.Default.minRectSize, Settings.Default.maxRectSize, Settings.Default.rectSizeStep, Settings.Default.rectSlideStep));
                     }
                 }
             }
@@ -105,13 +109,13 @@ namespace ObjectDetect
         {
             using (var dataFile = new StreamWriter(dataFileName))
             {
-                int maxFilenameLength = fileList.Select(line => (Path.GetFileName(line.FileName) ?? "").Length).Max();
+                var maxFilenameLength = fileList.Select(line => (Path.GetFileName(line.FileName) ?? "").Length).Max();
 
-                int padding = (maxFilenameLength / RectStringWidth + 1) * RectStringWidth;
+                var padding = (maxFilenameLength / RectStringWidth + 1) * RectStringWidth;
 
                 foreach (var line in fileList)
                 {
-                    await dataFile.WriteAsync((Path.GetFileName(line.FileName) ?? "").PadRight(padding) + line.Rectangles.Count.ToString().PadRight(RectStringWidth));
+                    await dataFile.WriteAsync((Path.GetFileName(line.FileName) ?? "").PadRight(padding) + line.Rectangles.Count.ToString(CultureInfo.InvariantCulture).PadRight(RectStringWidth));
 
                     foreach (var rect in line.Rectangles)
                     {

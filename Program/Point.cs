@@ -9,8 +9,8 @@ namespace Program
 
         public Point(float x, float y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
     }
 }

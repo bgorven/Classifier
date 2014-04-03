@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using AdaBoost;
 
@@ -27,9 +28,9 @@ namespace Program
 
             private Learner(Learner other)
             {
-                this._feature = other._feature;
-                this._numFeatures = other._numFeatures;
-                this._sample = other._sample;
+                _feature = other._feature;
+                _numFeatures = other._numFeatures;
+                _sample = other._sample;
             }
 
             public Learner(int feat)
@@ -56,9 +57,9 @@ namespace Program
 
             public IEnumerable<string> GetPossibleParams()
             {
-                for (int f = 0; f < _numFeatures; f++)
+                for (var f = 0; f < _numFeatures; f++)
                 {
-                    yield return f.ToString();
+                    yield return f.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
