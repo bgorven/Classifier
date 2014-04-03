@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectDetect", "ObjectDetec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectDetectTests", "ObjectDetectTests\ObjectDetectTests.csproj", "{7438FCFB-B99D-4EF1-8517-A29A90B92CB3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Util", "Util\Util.csproj", "{EA894232-08D4-4BA8-A391-0E0435C8F049}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{7438FCFB-B99D-4EF1-8517-A29A90B92CB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7438FCFB-B99D-4EF1-8517-A29A90B92CB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7438FCFB-B99D-4EF1-8517-A29A90B92CB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA894232-08D4-4BA8-A391-0E0435C8F049}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA894232-08D4-4BA8-A391-0E0435C8F049}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA894232-08D4-4BA8-A391-0E0435C8F049}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA894232-08D4-4BA8-A391-0E0435C8F049}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

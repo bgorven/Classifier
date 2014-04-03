@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:properties="clr-namespace:ObjectDetect.Properties"
-        xmlns:markupExtensions="clr-namespace:ObjectDetect.MarkupExtensions"
+        xmlns:util="clr-namespace:Util.Markup;assembly=Util"
         ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner"
         Title="Settings" Height="300" Width="300">
@@ -20,7 +20,7 @@
             <ColumnDefinition Width="*" Name="TextCol"/>
         </Grid.ColumnDefinitions>
         <Grid.Resources>
-            <markupExtensions:GridDefinitionConverter x:Key="GridConverter"/>
+            <util:GridDefinitionConverter x:Key="GridConverter"/>
         </Grid.Resources>
         <Label Grid.Row="{Binding ElementName=MinWinRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Minimum Window Size</Label>
         <Label Grid.Row="{Binding ElementName=MaxWinRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Maximum Window Size</Label>
@@ -35,5 +35,4 @@
             <Button Name="CancelButton" Content="_Cancel" IsCancel="True" MinWidth="85" Margin="2.5,5,5,5"/>
         </UniformGrid>
     </Grid>
-    
 </Window>

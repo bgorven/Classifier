@@ -60,6 +60,10 @@
       <Project>{8CC62106-2016-45C6-8114-FF4EF381C417}</Project>
       <Name>ObjectDetect</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Util\Util.csproj">
+      <Project>{ea894232-08d4-4ba8-a391-0e0435c8f049}</Project>
+      <Name>Util</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

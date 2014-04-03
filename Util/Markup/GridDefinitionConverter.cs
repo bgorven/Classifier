@@ -1,13 +1,14 @@
 ﻿//Taken from http://stackoverflow.com/questions/6447777/how-to-reference-a-row-column-defintion-in-grid-row-grid-column
 //and http://stackoverflow.com/questions/19232491/wpf-markupextension-and-rowdefinition-results-in-notimplementedexception
+
 using System;
 using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-namespace ObjectDetect.MarkupExtensions
+namespace Util.Markup
 {
-    class GridDefinitionConverter : IValueConverter
+    public class GridDefinitionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

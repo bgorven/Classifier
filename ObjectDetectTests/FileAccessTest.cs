@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Util.Collections;
 using ObjectDetect;
 using FileAccess = ObjectDetect.FileAccess;
 
@@ -51,16 +52,11 @@ namespace ObjectDetectTests
 
             var result = await FileAccess.LoadInfo(tempFileName);
 
-            foreach (var _ in result.Zip(expectedResult, (actual, expected) =>
+            result.Zip(expectedResult, (actual, expected) =>
             {
                 Assert.AreEqual(actual.FileName, expected.FileName, actual + " " + expected);
-                foreach (var _ in actual.Rectangles.Zip(expected.Rectangles, (a, e) =>
-                {
-                    Assert.AreEqual(a, e, a + " " + e);
-                    return a;
-                })) { }
-                return actual;
-            })) { }
+                actual.Rectangles.Zip(expected.Rectangles, (a, e) => Assert.AreEqual(a, e, a + " " + e));
+            });
 
             File.Delete(tempFileName);
             foreach (var filename in filenames)
