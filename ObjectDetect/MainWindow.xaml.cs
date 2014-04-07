@@ -46,7 +46,7 @@ namespace ObjectDetect
 
         private void canvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            _data.Canvas_WheelZoom(e.Delta);
+            Canvas.WheelZoom(_data, e.Delta);
             e.Handled = true;
         }
 
@@ -66,7 +66,7 @@ namespace ObjectDetect
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                _data.Canvas_DragIntermediate(_dragStart, e.GetPosition(Canvas));
+                Canvas.DragIntermediate(_data, _dragStart, e.GetPosition(Canvas));
             }
             _dragLeft = e.LeftButton == MouseButtonState.Pressed;
             _dragRight = e.RightButton == MouseButtonState.Pressed;
@@ -79,11 +79,11 @@ namespace ObjectDetect
             {
                 if (_dragLeft)
                 {
-                    _data.Canvas_DragFinal(_dragStart, e.GetPosition(Canvas));
+                    Canvas.DragFinal(_data, _dragStart, e.GetPosition(Canvas));
                 }
                 else
                 {
-                    await _data.Canvas_Click(MouseButton.Left);
+                    await Canvas.Click(_data, MouseButton.Left);
                 }
                 _dragLeft = false;
             }
@@ -91,7 +91,7 @@ namespace ObjectDetect
             {
                 if (!_dragRight)
                 {
-                    await _data.Canvas_Click(MouseButton.Right);
+                    await Canvas.Click(_data, MouseButton.Right);
                 }
                 _dragRight = false;
             }
@@ -100,7 +100,7 @@ namespace ObjectDetect
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (!_data.Confirm_Discard_Changes()) e.Cancel = true;
+            if (_data.UnsavedChangesPresent && !Confirm_Discard_Changes()) e.Cancel = true;
         }
 
         private void MenuItem_Classifier_Train(object sender, RoutedEventArgs e)
@@ -126,6 +126,11 @@ namespace ObjectDetect
             {
                 Settings.Default.Reload();
             }
+        }
+
+        internal bool Confirm_Discard_Changes()
+        {
+            return MessageBox.Show("Discard unsaved changes?", "Datafile Not Saved", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
         }
     }
 }

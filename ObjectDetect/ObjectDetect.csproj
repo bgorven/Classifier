@@ -58,7 +58,8 @@
     <Compile Include="Detector.cs" />
     <Compile Include="ImageSample.cs" />
     <Compile Include="LBPImageLearner.cs" />
-    <Compile Include="MainWindow_Helpers.cs" />
+    <Compile Include="WindowCanvas.cs" />
+    <Compile Include="WindowData.cs" />
     <Compile Include="fixed_point.cs" />
     <Compile Include="rectangle.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
