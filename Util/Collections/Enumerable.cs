@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Util.Collections
 {
-    public static class Extensions
+    public static class Enumerable
     {
         /// <summary>
         /// Iterates the IEnumerable immediately.
