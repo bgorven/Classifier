@@ -15,15 +15,18 @@ namespace Program
         }
 
         private Point _sample;
-        public void SetSample(Point s)
+
+        public Point Sample
         {
-            _sample = s;
+            set { _sample = value; }
         }
 
-        public string GetUniqueIdString()
+        public string UniqueId
         {
-            return "PointLearner";
+            get { return "PointLearner"; }
         }
+
+        public string Params { get { return _rotation.ToString(CultureInfo.InvariantCulture); } }
 
         public ILearner<Point> WithParams(string parameters)
         {

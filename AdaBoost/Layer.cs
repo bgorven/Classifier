@@ -1,6 +1,8 @@
-﻿namespace AdaBoost
+﻿using Util.Collections;
+
+namespace AdaBoost
 {
-    internal class Layer<TSample> where TSample : ISample
+    public class Layer<TSample> where TSample : ISample
     {
         private readonly ILearner<TSample> _learner;
         internal float CoefPos, CoefNeg;
@@ -14,15 +16,24 @@
             Threshold = threshold;
         }
 
-        internal float Classify(TSample s)
+        public Layer(ILearner<TSample> learner, string config)
         {
-            _learner.SetSample(s);
-            return _learner.Classify() > Threshold ? CoefPos : CoefNeg;
+            config = config.Substring(_learner.UniqueId.Length + 2);
+            _learner = learner.WithParams(config.Substring(0, config.LastIndexOf('>')));
+            config.Substring(config.LastIndexOf('>') + 1)
+                .Split(new[] {'?', ':'})
+                .Unpack(out Threshold, out CoefPos, out CoefNeg, float.Parse);
         }
 
         public override string ToString()
         {
-            return _learner + " > " + Threshold.ToString("n") + " ? " + CoefPos + " : " + CoefNeg;
+            return _learner.UniqueId + ": " + _learner.Params + "> " + Threshold.ToString("R") + " ? " + CoefPos.ToString("R") + " : " + CoefNeg.ToString("R");
+        }
+
+        internal float Classify(TSample s)
+        {
+            _learner.Sample = s;
+            return _learner.Classify() > Threshold ? CoefPos : CoefNeg;
         }
     }
 }

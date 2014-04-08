@@ -49,6 +49,12 @@
     <Compile Include="Trainer.cs" />
     <Compile Include="TrainingSample.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Util\Util.csproj">
+      <Project>{EA894232-08D4-4BA8-A391-0E0435C8F049}</Project>
+      <Name>Util</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

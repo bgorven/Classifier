@@ -37,6 +37,11 @@ namespace AdaBoost
             _layers.Add(l);
         }
 
+        public void AddLayer<TLearner>(string config) where TLearner : ILearner<TSample>, new()
+        {
+            _layers.Add(new Layer<TSample>(new TLearner(), config));
+        }
+
         /// <summary>
         /// Classifies an object. This function may terminate early if the confidence reaches a determined level.
         /// </summary>

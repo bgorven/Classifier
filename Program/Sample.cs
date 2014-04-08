@@ -43,10 +43,12 @@ namespace Program
                 return _sample.Features[_feature];
             }
 
-            public void SetSample(Sample s)
+            public Sample Sample
             {
-                _sample = s;
+                set { _sample = value; }
             }
+
+            public string Params { get { return _feature.ToString(CultureInfo.InvariantCulture); } }
 
             public ILearner<Sample> WithParams(string parameters)
             {
@@ -67,15 +69,15 @@ namespace Program
             {
                 return _feature;
             }
-            
-            public string GetUniqueIdString()
+
+            public string UniqueId
             {
-                return "Sample.Learner";
+                get { return "Sample.Learner"; }
             }
 
             public override string ToString()
             {
-                return GetUniqueIdString() + " [" + _feature + "]";
+                return UniqueId + " [" + _feature + "]";
             }
         }
     }

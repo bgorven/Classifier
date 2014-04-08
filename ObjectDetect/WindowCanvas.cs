@@ -182,7 +182,7 @@ namespace ObjectDetect
             return rectangle;
         }
 
-        internal static async void KeyDown(this Canvas canvas, WindowData data, KeyEventArgs e, MainWindow mainWindow)
+        internal static async void KeyPress(this Canvas canvas, WindowData data, KeyEventArgs e, MainWindow mainWindow)
         {
             if (mainWindow.DragLeft || mainWindow.DragRight) return;
             if (data.RectangleHasFocus)

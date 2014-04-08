@@ -65,6 +65,10 @@ namespace ObjectDetect
             }
         }
 
+        public string Params { get { return _config.ToString(); } }
+
+        public const string UniqueIdString = "LBPImageLearner";
+
         public float Classify()
         {
             var zoom = _sample.GetZoomLevelAtScale(_sample.Scale + _config.RelativeScale);
@@ -137,69 +141,71 @@ namespace ObjectDetect
 
         private static readonly ConcurrentDictionary<string, WeakReference<Bitmap<int>>> IntImageCache = new ConcurrentDictionary<string, WeakReference<Bitmap<int>>>();
 
-        public void SetSample(ImageSample s)
+        public ImageSample Sample
         {
-            if (!_sample.FileEquals(s))
+            set
             {
-                var entry = IntImageCache.GetOrAdd(s.FileName, new WeakReference<Bitmap<int>>(null));
-                lock (entry)
+                if (!_sample.FileEquals(value))
                 {
-                    if (!entry.TryGetTarget(out _integralImage))
+                    var entry = IntImageCache.GetOrAdd(value.FileName, new WeakReference<Bitmap<int>>(null));
+                    lock (entry)
                     {
-                        var image = new Bitmap(s.FileName);
-
-                        //TODO
-                        //
-                        //var srcData = image.LockBits(
-                        //    new System.Drawing.Rectangle(0, 0, image.Width, image.Height), 
-                        //    System.Drawing.Imaging.ImageLockMode.ReadOnly, 
-                        //    System.Drawing.Imaging.PixelFormat.Format16bppGrayScale);
-
-                        //var src = new short[srcData.Stride * srcData.Height];
-                        //var stride = srcData.Stride;
-
-                        //Endianness?!
-                        //System.Runtime.InteropServices.Marshal.Copy(srcData.Scan0, src, 0, src.Length);
-                        //image.UnlockBits(srcData);
-
-                        var stride = image.Width;
-                        var dst = new int[image.Width * image.Height];
-                        
-                        
-                        
-                        //sum each row independently
-                        Parallel.For(0, image.Height, y =>
+                        if (!entry.TryGetTarget(out _integralImage))
                         {
-                            var accumulator = 0;
-                            var rowBase = y * stride;
+                            var image = new Bitmap(value.FileName);
 
-                            for (var x = 0; x < image.Width; x++)
-                            {
-                                accumulator += (int)Math.Round(image.GetPixel(x, y).GetBrightness() * 256);
-                                dst[rowBase + x] = accumulator;
-                            }
-                        });
-                        //sum columns
-                        for (var y = 1; y < image.Height; y++)
-                        {
-                            var rowBase = y * stride;
-                            var prevRow = (y - 1) * stride;
+                            //TODO
+                            //
+                            //var srcData = image.LockBits(
+                            //    new System.Drawing.Rectangle(0, 0, image.Width, image.Height), 
+                            //    System.Drawing.Imaging.ImageLockMode.ReadOnly, 
+                            //    System.Drawing.Imaging.PixelFormat.Format16bppGrayScale);
 
-                            for (var x = 0; x < image.Width; x++)
+                            //var src = new short[srcData.Stride * srcData.Height];
+                            //var stride = srcData.Stride;
+
+                            //Endianness?!
+                            //System.Runtime.InteropServices.Marshal.Copy(srcData.Scan0, src, 0, src.Length);
+                            //image.UnlockBits(srcData);
+
+                            var stride = image.Width;
+                            var dst = new int[image.Width*image.Height];
+
+
+                            //sum each row independently
+                            Parallel.For(0, image.Height, y =>
                             {
-                                var prevSum = dst[prevRow + x];
-                                var thisSum = dst[rowBase + x];
-                                dst[rowBase + x] = prevSum + thisSum;
+                                var accumulator = 0;
+                                var rowBase = y*stride;
+
+                                for (var x = 0; x < image.Width; x++)
+                                {
+                                    accumulator += (int) Math.Round(image.GetPixel(x, y).GetBrightness()*256);
+                                    dst[rowBase + x] = accumulator;
+                                }
+                            });
+                            //sum columns
+                            for (var y = 1; y < image.Height; y++)
+                            {
+                                var rowBase = y*stride;
+                                var prevRow = (y - 1)*stride;
+
+                                for (var x = 0; x < image.Width; x++)
+                                {
+                                    var prevSum = dst[prevRow + x];
+                                    var thisSum = dst[rowBase + x];
+                                    dst[rowBase + x] = prevSum + thisSum;
+                                }
                             }
+
+                            _integralImage = new Bitmap<int>(dst, image.Width, image.Height, stride);
+
+                            entry.SetTarget(_integralImage);
                         }
-
-                        _integralImage = new Bitmap<int>(dst, image.Width, image.Height, stride);
-
-                        entry.SetTarget(_integralImage);
                     }
                 }
+                _sample = value;
             }
-            _sample = s;
         }
 
         public ILearner<ImageSample> WithParams(string parameters)
@@ -207,14 +213,14 @@ namespace ObjectDetect
             return new LBPImageLearner(Configuration.Parse(parameters), this);
         }
 
-        public string GetUniqueIdString()
+        public string UniqueId
         {
-            return "LBPImageSample";
+            get { return UniqueIdString; }
         }
 
         public override string ToString()
         {
-            return GetUniqueIdString() + " [" + _config.ToString() + "]";
+            return UniqueId + " [" + _config.ToString() + "]";
         }
 
         public IEnumerable<string> GetPossibleParams()

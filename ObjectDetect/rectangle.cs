@@ -25,5 +25,11 @@ namespace ObjectDetect
             W = (FixedPoint)w;
             H = (FixedPoint)h;
         }
+
+        internal bool Overlaps(Rectangle r)
+        {
+            return ((X <= r.X && r.X < X + W) || (r.X <= X && X < r.X + r.W)) &&
+                   ((Y <= r.Y && r.Y < Y + H) || (r.Y <= Y && Y < r.Y + r.H));
+        }
     }
 }

@@ -23,8 +23,8 @@ namespace AdaBoost
         /// files) are allocated for each sample, changing the sample will free or reuse resources
         /// allocated for the previous sample.
         /// </summary>
-        /// <param name="s">The sample, which may be the same as the the previously set sample.</param>
-        void SetSample(TSample s);
+        /// <value>The sample, which may be the same as the the previously set sample.</value>
+        TSample Sample { set; }
 
         /// <summary>
         /// Sets parameters for the following classification. A boost classifier may contain many
@@ -39,13 +39,15 @@ namespace AdaBoost
         /// For improved performance, the output of this learner may be cached. This method allows the learner
         /// to be cached by string index.
         /// </summary>
-        /// <returns>A string that uniquely identifies this learner.</returns>
-        string GetUniqueIdString();
+        /// <value>A string that uniquely identifies this learner.</value>
+        string UniqueId { get; }
 
         /// <summary>
         /// During training, it may be desirable to iterate over every possible parameter of the learner.
         /// </summary>
         /// <returns>an iterable object containing every valid parameter combination for the learner.</returns>
         IEnumerable<string> GetPossibleParams();
+
+        string Params { get; }
     }
 }

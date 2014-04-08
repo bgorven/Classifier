@@ -123,7 +123,7 @@ namespace AdaBoost
 
         private void BestConfiguration(ILearner<TSample> learner)
         {
-            var cacheKey = learner.GetUniqueIdString();
+            var cacheKey = learner.UniqueId;
             var predictions = _cache[cacheKey];
 
             if (predictions == null)
@@ -147,7 +147,7 @@ namespace AdaBoost
 
             foreach (var s in _positiveSamples.Concat(_negativeSamples))
             {
-                learner.SetSample(s.Sample);
+                learner.Sample = s.Sample;
                 foreach (var config in learner.GetPossibleParams())
                 {
                     if (!predictions.ContainsKey(config))
@@ -217,7 +217,7 @@ namespace AdaBoost
             var perfect = true;
             foreach (var s in _positiveSamples.Concat(_negativeSamples))
             {
-                learner.SetSample(s.Sample);
+                learner.Sample = s.Sample;
 // ReSharper disable CompareOfFloatsByEqualityOperator
                 if (learner.Classify() != outputs[s.Index])
                 {

@@ -132,5 +132,10 @@ namespace ObjectDetect
         {
             return MessageBox.Show("Discard unsaved changes?", "Datafile Not Saved", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
         }
+
+        private void Canvas_KeyDown(object sender, KeyEventArgs e)
+        {
+            Canvas.KeyPress(_data, e, this);
+        }
     }
 }
