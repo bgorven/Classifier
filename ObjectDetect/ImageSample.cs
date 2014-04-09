@@ -25,7 +25,7 @@ namespace ObjectDetect
 
         public bool FileEquals(ImageSample other)
         {
-            return FileName.Equals(other.FileName);
+            return other != null && FileName.Equals(other.FileName);
         }
 
         public override bool Equals(object obj)

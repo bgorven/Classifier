@@ -30,8 +30,10 @@ namespace ObjectDetectTests
                         if (index >= 0)
                         {
                             double xout, yout, wout, hout;
-                            Assert.IsTrue(testee.GetWindowDimensions(index, out xout, out yout, out wout, out hout));
-                            Assert.IsTrue(Contains(xout, yout, wout, hout, x, y, rectSize, rectSize));
+                            testee.GetWindowDimensions(index, out xout, out yout, out wout, out hout);
+                            Assert.IsTrue(Contains(xout, yout, wout, hout, x, y, rectSize, rectSize),
+                                x + "-" + (x + rectSize) + ", " + y + "-" + (y + rectSize) + " not in " + xout + "-" +
+                                (xout + wout) + ", " + yout + "-" + (yout + hout));
                             prevIndex = index;
                         }
                     }

@@ -73,6 +73,7 @@ namespace ObjectDetectTests
         public void OperatorLTtest()
         {
             Assert.IsTrue(3 < (FixedPoint)4);
+            Assert.IsFalse(640 < (FixedPoint)128);
         }
 
         [TestMethod]

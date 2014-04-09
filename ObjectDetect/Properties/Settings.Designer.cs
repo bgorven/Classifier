@@ -70,5 +70,41 @@ namespace ObjectDetect.Properties {
                 this["rectSlideStep"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int numPositive {
+            get {
+                return ((int)(this["numPositive"]));
+            }
+            set {
+                this["numPositive"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4000")]
+        public int numNegative {
+            get {
+                return ((int)(this["numNegative"]));
+            }
+            set {
+                this["numNegative"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
+        public int numLayers {
+            get {
+                return ((int)(this["numLayers"]));
+            }
+            set {
+                this["numLayers"] = value;
+            }
+        }
     }
 }

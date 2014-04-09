@@ -50,8 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="FileAccessTest.cs" />
-    <Compile Include="fixed_pointTests.cs" />
+    <Compile Include="FixedPointTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SlidingWindowTest.cs" />
   </ItemGroup>

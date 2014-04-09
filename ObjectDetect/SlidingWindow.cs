@@ -128,15 +128,15 @@ namespace ObjectDetect
             throw new ArgumentOutOfRangeException();
         }
 
-        private FixedPoint WinSize(int size)
-        {
-            var sz = WinSizes().GetEnumerator();
-            for (var i = 0; i < size; i++)
-            {
-                sz.MoveNext();
-            }
-            return sz.Current;
-        }
+        //private FixedPoint WinSize(int size)
+        //{
+        //    var sz = WinSizes().GetEnumerator();
+        //    for (var i = 0; i < size; i++)
+        //    {
+        //        sz.MoveNext();
+        //    }
+        //    return sz.Current;
+        //}
 
         //C# doesn't allow to set floating point modes, but we require absolute repeatability...
         private IEnumerable<FixedPoint> WinSizes()
@@ -162,7 +162,10 @@ namespace ObjectDetect
             //double offset = (winSz / Math.Pow(2, offsetExp));
             //return checked((int)Math.Floor(availableWidth / offset) + 1);
 
-            if (length < winSz) throw new ArgumentOutOfRangeException();
+            if (length < winSz)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
             return ((length / winSz - 1) << _offsetExp).Floor() + 1;
         }
 
@@ -211,6 +214,11 @@ namespace ObjectDetect
         internal FixedPoint GetZoomLevelAtScale(int scale)
         {
             return WinSizes().ElementAt(scale) >> _offsetExp;
+        }
+
+        public int NumWindows
+        {
+            get { return WinSizes().TakeWhile(winSz => winSz <= _szMax).Sum(winSz => GetNumWindows(winSz)); }
         }
     }
 }

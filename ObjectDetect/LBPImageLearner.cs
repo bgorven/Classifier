@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
@@ -97,13 +98,13 @@ namespace ObjectDetect
 
         private FixedPoint GetSurroundingPixVal(int n, int x, int y, FixedPoint zoom, FixedPoint xBase, FixedPoint yBase)
         {
-            return GetPixelValue(x + Configuration.XOffsets[n], y + Configuration.YOffsets[n], zoom, _sample.Location.X, _sample.Location.Y);
+            return GetPixelValue(x + Configuration.XOffsets[n], y + Configuration.YOffsets[n], zoom, xBase, yBase);
         }
 
         private FixedPoint GetPixelValue(int x, int y, FixedPoint zoom, FixedPoint xBase, FixedPoint yBase)
         {
             var xloc = xBase + x * zoom - 1;
-            var yloc = xBase + x * zoom - 1;
+            var yloc = yBase + y * zoom - 1;
             var topLeft = Interpolate(xloc, yloc);
             var lowLeft = Interpolate(xloc, yloc + zoom);
             var topRight = Interpolate(xloc + zoom, yloc);
@@ -145,60 +146,62 @@ namespace ObjectDetect
         {
             set
             {
-                if (!_sample.FileEquals(value))
+                if (!value.FileEquals(_sample))
                 {
                     var entry = IntImageCache.GetOrAdd(value.FileName, new WeakReference<Bitmap<int>>(null));
                     lock (entry)
                     {
                         if (!entry.TryGetTarget(out _integralImage))
                         {
-                            var image = new Bitmap(value.FileName);
+                            var src = new Bitmap(value.FileName);
+                            var image = new Bitmap(src.Width, src.Height, PixelFormat.Format24bppRgb);
+                            var theWholeImage = new System.Drawing.Rectangle(0, 0, image.Width, image.Height);
+                            using (var gr = Graphics.FromImage(image))
+                            {
+                                using (var attr = new ImageAttributes())
+                                {
+                                    attr.SetColorMatrix(new ColorMatrix(
+                                        new[]
+                                        {
+                                            new[] {.3f, .3f, .3f, 0, 0},
+                                            new[] {.59f, .59f, .59f, 0, 0},
+                                            new[] {.11f, .11f, .11f, 0, 0},
+                                            new[] {0, 0, 0, 1f, 0},
+                                            new[] {0, 0, 0, 0, 1f}
+                                        }));
+                                    gr.DrawImage(src, theWholeImage, 0, 0, src.Width, src.Height, GraphicsUnit.Pixel, attr);
+                                }
+                            }
+                            src.Dispose();
 
-                            //TODO
-                            //
-                            //var srcData = image.LockBits(
-                            //    new System.Drawing.Rectangle(0, 0, image.Width, image.Height), 
-                            //    System.Drawing.Imaging.ImageLockMode.ReadOnly, 
-                            //    System.Drawing.Imaging.PixelFormat.Format16bppGrayScale);
+                            var imData = image.LockBits(
+                                theWholeImage, 
+                                ImageLockMode.ReadOnly, 
+                                image.PixelFormat);
 
-                            //var src = new short[srcData.Stride * srcData.Height];
-                            //var stride = srcData.Stride;
-
-                            //Endianness?!
-                            //System.Runtime.InteropServices.Marshal.Copy(srcData.Scan0, src, 0, src.Length);
-                            //image.UnlockBits(srcData);
-
-                            var stride = image.Width;
-                            var dst = new int[image.Width*image.Height];
-
+                            var width = image.Width;
+                            var height = image.Height;
+                            var dst = new int[height][];
 
                             //sum each row independently
-                            Parallel.For(0, image.Height, y =>
-                            {
-                                var accumulator = 0;
-                                var rowBase = y*stride;
+                            Parallel.For(0, height, y => dst[y] = SumRow(y*imData.Stride, width, imData));
 
-                                for (var x = 0; x < image.Width; x++)
-                                {
-                                    accumulator += (int) Math.Round(image.GetPixel(x, y).GetBrightness()*256);
-                                    dst[rowBase + x] = accumulator;
-                                }
-                            });
+                            image.UnlockBits(imData);
+                            image.Dispose();
+
+
                             //sum columns
-                            for (var y = 1; y < image.Height; y++)
+                            for (var y = 1; y < height; y++)
                             {
-                                var rowBase = y*stride;
-                                var prevRow = (y - 1)*stride;
-
-                                for (var x = 0; x < image.Width; x++)
+                                for (var x = 0; x < width; x++)
                                 {
-                                    var prevSum = dst[prevRow + x];
-                                    var thisSum = dst[rowBase + x];
-                                    dst[rowBase + x] = prevSum + thisSum;
+                                    var prevSum = dst[y-1][x];
+                                    var thisSum = dst[y][x];
+                                    dst[y][x] = prevSum + thisSum;
                                 }
                             }
 
-                            _integralImage = new Bitmap<int>(dst, image.Width, image.Height, stride);
+                            _integralImage = new Bitmap<int>(dst, width, height);
 
                             entry.SetTarget(_integralImage);
                         }
@@ -206,6 +209,23 @@ namespace ObjectDetect
                 }
                 _sample = value;
             }
+        }
+
+        private static unsafe int[] SumRow(int offset, int width, BitmapData src)
+        {
+            if (src.PixelFormat != PixelFormat.Format24bppRgb) throw new ArgumentException("src");
+            const int pixSize = 3;
+
+            var srcRow = (byte*) src.Scan0 + offset;
+            var dstRow = new int[width];
+            var accumulator = 0;
+
+            for (var x = 0; x < width; x++)
+            {
+                accumulator += srcRow[x*pixSize];
+                dstRow[x] = accumulator;
+            }
+            return dstRow;
         }
 
         public ILearner<ImageSample> WithParams(string parameters)

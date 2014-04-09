@@ -12,6 +12,9 @@
             <RowDefinition Name="MaxWinRow" Height="auto"/>
             <RowDefinition Name="SizeStepRow" Height="auto"/>
             <RowDefinition Name="SlideStepRow" Height="auto"/>
+            <RowDefinition Name="NumPosRow" Height="auto"/>
+            <RowDefinition Name="NumNegRow" Height="auto"/>
+            <RowDefinition Name="LayerRow" Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Name="ButtonRow" Height="auto"/>
         </Grid.RowDefinitions>
@@ -26,10 +29,16 @@
         <Label Grid.Row="{Binding ElementName=MaxWinRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Maximum Window Size</Label>
         <Label Grid.Row="{Binding ElementName=SizeStepRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Window Size Step</Label>
         <Label Grid.Row="{Binding ElementName=SlideStepRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Window Slide Step</Label>
+        <Label Grid.Row="{Binding ElementName=NumPosRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Positive Sample Count</Label>
+        <Label Grid.Row="{Binding ElementName=NumNegRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Negative Sample Count</Label>
+        <Label Grid.Row="{Binding ElementName=LayerRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=LabelCol, Converter={StaticResource GridConverter}}">Maximum Layer Count</Label>
         <TextBox Grid.Row="{Binding ElementName=MinWinRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=TextCol, Converter={StaticResource GridConverter}}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=minRectSize, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
         <TextBox Grid.Row="{Binding ElementName=MaxWinRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=TextCol, Converter={StaticResource GridConverter}}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=maxRectSize, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
         <TextBox Grid.Row="{Binding ElementName=SizeStepRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=TextCol, Converter={StaticResource GridConverter}}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=rectSizeStep, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
         <TextBox Grid.Row="{Binding ElementName=SlideStepRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=TextCol, Converter={StaticResource GridConverter}}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=rectSlideStep, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
+        <TextBox Grid.Row="{Binding ElementName=NumPosRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=TextCol, Converter={StaticResource GridConverter}}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=numPositive, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
+        <TextBox Grid.Row="{Binding ElementName=NumNegRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=TextCol, Converter={StaticResource GridConverter}}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=numNegative, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
+        <TextBox Grid.Row="{Binding ElementName=LayerRow, Converter={StaticResource GridConverter}}" Grid.Column="{Binding ElementName=TextCol, Converter={StaticResource GridConverter}}" Text="{Binding Source={x:Static properties:Settings.Default}, Mode=TwoWay, Path=numLayers, NotifyOnValidationError=true, ValidatesOnExceptions=true}"/>
         <UniformGrid Grid.Row="{Binding ElementName=ButtonRow, Converter={StaticResource GridConverter}}" HorizontalAlignment="Right" Grid.ColumnSpan="2" Grid.Column="0" Rows="1" Columns="2">
             <Button Name="OkButton" Content="_OK" IsDefault="True" Click="okButton_Click" Margin="5,5,2.5,5"/>
             <Button Name="CancelButton" Content="_Cancel" IsCancel="True" MinWidth="85" Margin="2.5,5,5,5"/>

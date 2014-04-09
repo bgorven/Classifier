@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AdaBoost;
 using Util.Random;
@@ -34,16 +32,19 @@ namespace ObjectDetect
 
         internal static IEnumerable<ImageSample> GetPositiveSamples(List<FileAccess.FileEntry> fileList, int numPositive)
         {
-            return (from file in fileList
-                    from rect in file.Rectangles
-                    select new ImageSample(file.FileName, file.Window.GetNearestWindow(rect), file.Window));
+            var positives = from file in fileList
+                from rect in file.Rectangles
+                select new ImageSample(file.FileName, file.Window.GetNearestWindow(rect), file.Window);
+            if (numPositive > 0) positives = positives.Take(numPositive);
+            return positives;
         }
 
         internal static IEnumerable<ImageSample> GetNegativeSamples(List<FileAccess.FileEntry> fileList, int numNegative)
         {
             var negatives = new ImageSample[numNegative];
             var fileIter = fileList.GetEnumerator();
-            var intIter = Enumerable.Range(0, int.MaxValue).Select(Permute.Int32).GetEnumerator();
+            var intIter = new PermutedSequence(fileList.Max(entry => entry.Window.NumWindows));
+            intIter.MoveNext();
 
             var i = 0;
             while (i < numNegative)
@@ -51,13 +52,20 @@ namespace ObjectDetect
                 if (fileIter.MoveNext())
                 {
                     Debug.Assert(fileIter.Current != null, "fileIter.Current != null");
-                    var rect = fileIter.Current.Window.GetRectangle(intIter.Current);
-                    if (!fileIter.Current.Rectangles.Any(rect.Overlaps))
+                    try
                     {
-                        negatives[i] = new ImageSample(fileIter.Current.FileName, intIter.Current, fileIter.Current.Window);
-                        i++;
+                        var rect = fileIter.Current.Window.GetRectangle(intIter.Current);
+                        if (!fileIter.Current.Rectangles.Any(rect.Overlaps))
+                        {
+                            negatives[i] = new ImageSample(fileIter.Current.FileName, intIter.Current,
+                                fileIter.Current.Window);
+                            i++;
+                        }
                     }
-                    fileIter.MoveNext();
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        //continue;
+                    }
                 }
                 else
                 {

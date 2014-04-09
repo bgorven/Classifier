@@ -123,15 +123,12 @@ namespace AdaBoost
 
         private void BestConfiguration(ILearner<TSample> learner)
         {
-            var cacheKey = learner.UniqueId;
-            var predictions = _cache[cacheKey];
-
-            if (predictions == null)
+            if (!_cache.ContainsKey(learner.UniqueId))
             {
-                predictions = GetPredictions(learner);
-
-                _cache[cacheKey] = predictions;
+                _cache[learner.UniqueId] = GetPredictions(learner);
             }
+
+            var predictions = _cache[learner.UniqueId];
 
             Parallel.ForEach(
                 predictions,
