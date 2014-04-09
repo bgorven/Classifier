@@ -6,12 +6,12 @@ namespace ObjectDetect
     {
         public readonly string FileName;
         public readonly int WindowIndex;
-        public readonly SlidingWindow WindowManager;
-        public Rectangle Location { get { return WindowManager.GetRectangle(WindowIndex); } }
+        internal readonly SlidingWindow WindowManager;
+        internal Rectangle Location { get { return WindowManager.GetRectangle(WindowIndex); } }
         public int Scale { get { return WindowManager.GetScale(WindowIndex); } }
         public int PixelCount { get { return WindowManager.OffsetStepsPerWindow; } }
 
-        public ImageSample(string fileName, int windowIndex, SlidingWindow windowManager)
+        internal ImageSample(string fileName, int windowIndex, SlidingWindow windowManager)
         {
             FileName = fileName;
             WindowIndex = windowIndex;

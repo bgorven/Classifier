@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using AdaBoost;
-using Util.Random;
+using Utilities.Random;
 
 namespace ObjectDetect
 {
@@ -13,7 +15,7 @@ namespace ObjectDetect
     {
         private readonly Trainer<ImageSample> _trainer;
 
-        public Detector(List<FileAccess.FileEntry> fileList, int numPositive, int numNegative)
+        internal Detector(List<FileAccess.FileEntry> fileList, int numPositive, int numNegative)
         {
             var positives = GetPositiveSamples(fileList, numPositive).ToList();
             if (numNegative <= 0) numNegative = positives.Count;
@@ -22,7 +24,7 @@ namespace ObjectDetect
             _trainer = new Trainer<ImageSample>(new[] { new LBPImageLearner() }, positives, negatives);
         }
 
-        public void Train(int numLayers)
+        internal void Train(int numLayers)
         {
             for (var i = numLayers; i > 0; i--)
             {
@@ -44,17 +46,25 @@ namespace ObjectDetect
             var negatives = new ImageSample[numNegative];
             var fileIter = fileList.GetEnumerator();
             var intIter = new PermutedSequence(fileList.Max(entry => entry.Window.NumWindows));
-            intIter.MoveNext();
-
-            var i = 0;
-            while (i < numNegative)
+            try
             {
-                if (fileIter.MoveNext())
+                intIter.MoveNext();
+
+                var i = 0;
+                while (i < numNegative)
                 {
-                    Debug.Assert(fileIter.Current != null, "fileIter.Current != null");
-                    try
+                    if (fileIter.MoveNext())
                     {
-                        var rect = fileIter.Current.Window.GetRectangle(intIter.Current);
+                        if (fileIter.Current == null) continue;
+                        Rectangle rect;
+                        try
+                        {
+                            rect = fileIter.Current.Window.GetRectangle(intIter.Current);
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            continue;
+                        }
                         if (!fileIter.Current.Rectangles.Any(rect.Overlaps))
                         {
                             negatives[i] = new ImageSample(fileIter.Current.FileName, intIter.Current,
@@ -62,51 +72,39 @@ namespace ObjectDetect
                             i++;
                         }
                     }
-                    catch (ArgumentOutOfRangeException)
+                    else
                     {
-                        //continue;
+                        fileIter.Dispose();
+                        fileIter = fileList.GetEnumerator();
+                        if (!intIter.MoveNext()) throw new IndexOutOfRangeException("Not enough integers.");
                     }
                 }
-                else
-                {
-                    fileIter = fileList.GetEnumerator();
-                    if (!intIter.MoveNext()) throw new Exception("Not enough integers.");
-                }
+                return negatives;
             }
-            return negatives;
+            finally
+            {
+                fileIter.Dispose();
+                intIter.Dispose();
+            }
         }
 
-        internal async Task Write(FileStream fileStream)
+        internal async Task SaveData(StreamWriter writer)
         {
-            using (var writer = new StreamWriter(fileStream))
-            {
-                await writer.WriteAsync(_trainer.Classifier.ToString());
-            }
-
+            await writer.WriteAsync(_trainer.Classifier.ToString());
         }
 
-        public static async Task<TrainingData> LoadData(FileStream fileStream)
+        internal static async Task<Classifier<ImageSample>> LoadData(StreamReader reader)
         {
-            var retVal = new TrainingData();
-            using (var reader = new StreamReader(fileStream))
-            {
-                var line = await reader.ReadLineAsync();
+            var retVal = new Classifier<ImageSample>();
 
-                if (line.StartsWith(LBPImageLearner.UniqueIdString))
-                {
-                    retVal.Classifier.AddLayer<LBPImageLearner>(line);
-                }
+            var line = await reader.ReadLineAsync();
+
+            if (line.StartsWith(LBPImageLearner.UniqueIdString))
+            {
+                retVal.AddLayer<LBPImageLearner>(line);
             }
+
             return retVal;
-        }
-
-        internal class TrainingData
-        {
-            internal Classifier<ImageSample> Classifier;
-            public TrainingData()
-            {
-                Classifier = new Classifier<ImageSample>();
-            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace ObjectDetect
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        internal MainWindow()
         {
             InitializeComponent();
             _data = new WindowData(this);
@@ -18,13 +18,13 @@ namespace ObjectDetect
 
         private readonly WindowData _data;
 
-        public bool DragLeft
+        internal bool DragLeft
         {
             set { _dragLeft = value; }
             get { return _dragLeft; }
         }
 
-        public bool DragRight
+        internal bool DragRight
         {
             set { _dragRight = value; }
             get { return _dragRight; }

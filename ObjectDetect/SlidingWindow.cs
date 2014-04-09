@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ObjectDetect
 {
-    public class SlidingWindow
+    internal class SlidingWindow
     {
         readonly int _w;
         readonly int _h;
@@ -22,7 +22,7 @@ namespace ObjectDetect
         /// <param name="stepSize">each level of window is (2^stepsize+1)/(2^stepsize) times larger than the previous</param>
         /// <param name="offsetStepSize">each window will overlap horizontally and vertically with 2^offsetStepSize other windows in each row or column.<br/>
         /// offset steps should not be smaller than pixels, thus if the startSize is 64, for instance, offsetStepSize param should not be less than 6.</param>
-        public SlidingWindow(int w, int h, int startSize, int endSize, int stepSize, int offsetStepSize)
+        internal SlidingWindow(int w, int h, int startSize, int endSize, int stepSize, int offsetStepSize)
         {
             _w = w;
             _h = h;
@@ -32,12 +32,12 @@ namespace ObjectDetect
             _offsetExp = offsetStepSize;
         }
 
-        public int OffsetStepsPerWindow
+        internal int OffsetStepsPerWindow
         {
             get { return 1 << _offsetExp; }
         }
 
-        public int GetNearestWindow(int x, int y, int width, int height)
+        internal int GetNearestWindow(int x, int y, int width, int height)
         {
             //precise center point
             var centerX = x + (FixedPoint)width / 2;
@@ -61,7 +61,7 @@ namespace ObjectDetect
             return -1;
         }
 
-        public int GetNearestWindow(Rectangle loc)
+        internal int GetNearestWindow(Rectangle loc)
         {
             //precise center point
             var centerX = loc.X + loc.W / 2;
@@ -85,7 +85,7 @@ namespace ObjectDetect
             return -1;
         }
 
-        public bool GetWindowDimensions(int index, out double x, out double y, out double w, out double h)
+        internal bool GetWindowDimensions(int index, out double x, out double y, out double w, out double h)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace ObjectDetect
                 return false;
             }
         }
-        public Rectangle GetRectangle(int index)
+        internal Rectangle GetRectangle(int index)
         {
             if (index < 0) throw new ArgumentOutOfRangeException();
             var indexRange = 0;
@@ -216,7 +216,7 @@ namespace ObjectDetect
             return WinSizes().ElementAt(scale) >> _offsetExp;
         }
 
-        public int NumWindows
+        internal int NumWindows
         {
             get { return WinSizes().TakeWhile(winSz => winSz <= _szMax).Sum(winSz => GetNumWindows(winSz)); }
         }

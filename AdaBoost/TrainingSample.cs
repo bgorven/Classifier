@@ -1,4 +1,6 @@
-﻿namespace AdaBoost
+﻿using Utilities.Arithmetic;
+
+namespace AdaBoost
 {
     internal struct TrainingSample<TSample> where TSample : ISample
     {
@@ -18,7 +20,7 @@
         public int Index;
 
         private KahanSum _confidenceP, _confidenceN;
-        public float Confidence { get { return _confidenceP.S + _confidenceN.S - _confidenceP.C - _confidenceN.C; } }
+        public float Confidence { get { return _confidenceP.Value + _confidenceN.Value - _confidenceP.Compensation - _confidenceN.Compensation; } }
 
         internal void AddConfidence(float c)
         {

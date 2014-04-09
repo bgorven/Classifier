@@ -43,21 +43,21 @@ namespace Program
                 return _sample.Features[_feature];
             }
 
-            public Sample Sample
+            public void SetSample(Sample value)
             {
-                set { _sample = value; }
+                _sample = value;
             }
 
-            public string Params { get { return _feature.ToString(CultureInfo.InvariantCulture); } }
+            public string Config { get { return _feature.ToString(CultureInfo.InvariantCulture); } }
 
-            public ILearner<Sample> WithParams(string parameters)
+            public ILearner<Sample> WithConfiguration(string configuration)
             {
                 var ret = new Learner(this);
-                if (!int.TryParse(parameters, out ret._feature)) throw new ArgumentException();
+                if (!int.TryParse(configuration, out ret._feature)) throw new ArgumentException();
                 return ret;
             }
 
-            public IEnumerable<string> GetPossibleParams()
+            public IEnumerable<string> AllPossibleConfigurations()
             {
                 for (var f = 0; f < _numFeatures; f++)
                 {

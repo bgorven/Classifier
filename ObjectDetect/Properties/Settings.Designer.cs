@@ -17,7 +17,7 @@ namespace ObjectDetect.Properties {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
         
-        public static Settings Default {
+        internal static Settings Default {
             get {
                 return defaultInstance;
             }
@@ -26,7 +26,7 @@ namespace ObjectDetect.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("128")]
-        public int minRectSize {
+        internal int minRectSize {
             get {
                 return ((int)(this["minRectSize"]));
             }
@@ -38,7 +38,7 @@ namespace ObjectDetect.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("512")]
-        public int maxRectSize {
+        internal int maxRectSize {
             get {
                 return ((int)(this["maxRectSize"]));
             }
@@ -50,7 +50,7 @@ namespace ObjectDetect.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("4")]
-        public int rectSizeStep {
+        internal int rectSizeStep {
             get {
                 return ((int)(this["rectSizeStep"]));
             }
@@ -62,7 +62,7 @@ namespace ObjectDetect.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("6")]
-        public int rectSlideStep {
+        internal int rectSlideStep {
             get {
                 return ((int)(this["rectSlideStep"]));
             }
@@ -74,7 +74,7 @@ namespace ObjectDetect.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int numPositive {
+        internal int numPositive {
             get {
                 return ((int)(this["numPositive"]));
             }
@@ -86,7 +86,7 @@ namespace ObjectDetect.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("4000")]
-        public int numNegative {
+        internal int numNegative {
             get {
                 return ((int)(this["numNegative"]));
             }
@@ -98,7 +98,7 @@ namespace ObjectDetect.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("2000")]
-        public int numLayers {
+        internal int numLayers {
             get {
                 return ((int)(this["numLayers"]));
             }

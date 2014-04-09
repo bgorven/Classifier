@@ -11,7 +11,7 @@ namespace ObjectDetect
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public class WindowData
+    internal class WindowData
     {
         private readonly MainWindow _window;
         internal WindowData(MainWindow window)

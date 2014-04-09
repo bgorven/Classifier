@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectDetect", "ObjectDetec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectDetectTests", "ObjectDetectTests\ObjectDetectTests.csproj", "{7438FCFB-B99D-4EF1-8517-A29A90B92CB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Util", "Util\Util.csproj", "{EA894232-08D4-4BA8-A391-0E0435C8F049}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "Util\Utilities.csproj", "{EA894232-08D4-4BA8-A391-0E0435C8F049}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

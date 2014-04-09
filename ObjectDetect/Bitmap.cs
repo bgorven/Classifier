@@ -5,18 +5,18 @@ namespace ObjectDetect
     class Bitmap<T>
     {
         private readonly T[][] _data;
-        public readonly int Width;
-        public readonly int Height;
+        internal readonly int Width;
+        internal readonly int Height;
 
 
-        public Bitmap(T[][] data, int width, int height)
+        internal Bitmap(T[][] data, int width, int height)
         {
             _data = data;
             Width = width;
             Height = height;
         }
 
-        public Bitmap(T[] data, int width, int height, int stride)
+        internal Bitmap(T[] data, int width, int height, int stride)
         {
             if (data.Length != stride*height) throw new ArgumentException("data length should equal stride*height");
             Width = width;
@@ -33,6 +33,6 @@ namespace ObjectDetect
             }
         }
 
-        public T this[int x, int y] { get { return _data[y][x]; } }
+        internal T this[int x, int y] { get { return _data[y][x]; } }
     }
 }

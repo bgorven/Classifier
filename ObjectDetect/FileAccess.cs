@@ -10,24 +10,28 @@ using ObjectDetect.Properties;
 
 namespace ObjectDetect
 {
-    public class FileAccess
+    internal static class FileAccess
     {
-        public class FileEntry
+        internal class FileEntry
         {
-            public readonly string FileName;
-            public readonly List<Rectangle> Rectangles;
-            public readonly SlidingWindow Window;
+            private readonly string _fileName;
+            private readonly List<Rectangle> _rectangles;
+            private readonly SlidingWindow _window;
 
-            public FileEntry(string file, List<Rectangle> rectangles, int width, int height, int startSize, int endSize, int stepSize, int offsetStepSize)
+            internal string FileName { get { return _fileName; } }
+            internal IList<Rectangle> Rectangles { get { return _rectangles.AsReadOnly(); } }
+            internal SlidingWindow Window { get { return _window;} }
+
+            internal FileEntry(string file, List<Rectangle> rectangles, int width, int height, int startSize, int endSize, int stepSize, int offsetStepSize)
             {
-                FileName = file;
-                Rectangles = rectangles;
-                Window = new SlidingWindow(width, height, startSize, endSize, stepSize, offsetStepSize);
+                _fileName = file;
+                _rectangles = rectangles;
+                _window = new SlidingWindow(width, height, startSize, endSize, stepSize, offsetStepSize);
             }
         }
 
-        //public const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
-        public static async Task<List<FileEntry>> LoadInfo(string dataFileName)
+        //internal const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
+        internal static async Task<List<FileEntry>> LoadInfo(string dataFileName)
         {
             var fileList = new List<FileEntry>();
 
@@ -105,7 +109,7 @@ namespace ObjectDetect
         }
 
         const int RectStringWidth = 20;
-        public static async Task SaveInfo(string dataFileName, List<FileEntry> fileList)
+        internal static async Task SaveInfo(string dataFileName, List<FileEntry> fileList)
         {
             using (var dataFile = new StreamWriter(dataFileName))
             {

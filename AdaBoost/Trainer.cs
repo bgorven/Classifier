@@ -24,6 +24,7 @@ namespace AdaBoost
         /// will be iterated through as each layer is added.</param>
         /// <param name="positiveSamples">The samples with which to train the learner.</param>
         /// <param name="negativeSamples">The samples with which to train the learner.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public Trainer(IEnumerable<ILearner<TSample>> learners, IEnumerable<TSample> positiveSamples, IEnumerable<TSample> negativeSamples)
         {
             _learners = learners.ToArray();
@@ -133,7 +134,7 @@ namespace AdaBoost
             Parallel.ForEach(
                 predictions,
                 () => new LayerHolder(float.PositiveInfinity, null, null),
-                (p, s, best) => BestLayerSetup(learner.WithParams(p.Key), p.Value, best),
+                (p, s, best) => BestLayerSetup(learner.WithConfiguration(p.Key), p.Value, best),
                 SetBest
             );
         }
@@ -144,14 +145,16 @@ namespace AdaBoost
 
             foreach (var s in _positiveSamples.Concat(_negativeSamples))
             {
-                learner.Sample = s.Sample;
-                foreach (var config in learner.GetPossibleParams())
+                learner.SetSample(s.Sample);
+                foreach (var config in learner.AllPossibleConfigurations())
                 {
+                    if (config.IndexOfAny(new[] { '>', '?', ':', '\r', '\n' }) > 0) throw new FormatException("Learner configuration cannot contain any of '>', '?', ':', or a line break.");
+
                     if (!predictions.ContainsKey(config))
                     {
                         predictions.Add(config, new float[_positiveSamples.Length + _negativeSamples.Length]);
                     }
-                    var temp = learner.WithParams(config);
+                    var temp = learner.WithConfiguration(config);
 
                     predictions[config][s.Index] = temp.Classify();
                 }

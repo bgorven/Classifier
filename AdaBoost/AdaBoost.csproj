@@ -28,6 +28,14 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>AdaBoostKeyFile.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -43,17 +51,19 @@
     <Compile Include="Classifier.cs" />
     <Compile Include="ILearner.cs" />
     <Compile Include="ISample.cs" />
-    <Compile Include="KahanSum.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Trainer.cs" />
     <Compile Include="TrainingSample.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Util\Util.csproj">
+    <ProjectReference Include="..\Util\Utilities.csproj">
       <Project>{EA894232-08D4-4BA8-A391-0E0435C8F049}</Project>
-      <Name>Util</Name>
+      <Name>Utilities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AdaBoostKeyFile.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

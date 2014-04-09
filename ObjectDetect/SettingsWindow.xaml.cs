@@ -9,7 +9,7 @@ namespace ObjectDetect
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        public SettingsWindow()
+        internal SettingsWindow()
         {
             InitializeComponent();
             AddHandler(Validation.ErrorEvent, new RoutedEventHandler(CheckValidation));

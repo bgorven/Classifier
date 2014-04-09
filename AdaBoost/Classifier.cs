@@ -24,7 +24,7 @@ namespace AdaBoost
         /// <param name="prototype">The classifier to copy.</param>
         public Classifier(Classifier<TSample> prototype)
         {
-            _layers = new List<Layer<TSample>>(prototype._layers);
+            _layers = prototype != null ? new List<Layer<TSample>>(prototype._layers) : new List<Layer<TSample>>();
         }
 
         private readonly List<Layer<TSample>> _layers;
@@ -37,32 +37,38 @@ namespace AdaBoost
             _layers.Add(l);
         }
 
-        public void AddLayer<TLearner>(string config) where TLearner : ILearner<TSample>, new()
+        /// <summary>
+        /// Adds a layer to the classifier matching a given layer configuration string.
+        /// </summary>
+        /// <typeparam name="TLearner">A class implementing ILearner whose Unique ID String matches the start of the configuration string.</typeparam>
+        /// <param name="configuration">A string describing the layer, previously obtained by a call to Layer.ToString() or Classifier.ToString()</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
+        public void AddLayer<TLearner>(string configuration) where TLearner : ILearner<TSample>, new()
         {
-            _layers.Add(new Layer<TSample>(new TLearner(), config));
+            _layers.Add(new Layer<TSample>(new TLearner(), configuration));
         }
 
         /// <summary>
         /// Classifies an object. This function may terminate early if the confidence reaches a determined level.
         /// </summary>
-        /// <param name="s">The object to classify.</param>
+        /// <param name="sample">The object to classify.</param>
         /// <returns>The sign of the return value is the prediction, and it's absolute value is the confidence.</returns>
-        public float Classify(TSample s) {
-            return Classify(s, true);
+        public float Classify(TSample sample) {
+            return Classify(sample, true);
         }
 
         /// <summary>
         /// Classifies an object, optionally terminating at a predefined confidence level.
         /// </summary>
-        /// <param name="s">The object to classify.</param>
+        /// <param name="sample">The object to classify.</param>
         /// <param name="canEarlyTerminate">If this value is true, the object will only be tested against enough weak
         /// learners to reach a predetermined confidence level.</param>
         /// <returns>The sign of the return value is the prediction, and it's absolute value is the confidence.</returns>
-        public float Classify(TSample s, bool canEarlyTerminate)
+        public float Classify(TSample sample, bool canEarlyTerminate)
         {
             float confidence = 0;
             foreach (var l in _layers) {
-                confidence += l.Classify(s);
+                confidence += l.Classify(sample);
                 if (canEarlyTerminate) break;
             }
 
@@ -70,7 +76,7 @@ namespace AdaBoost
         }
 
         /// <summary>
-        /// provides a list of the layers that this classifier is composed of.
+        /// provides a newline-separated list of the layers that this classifier is composed of.
         /// </summary>
         /// <returns></returns>
         public override string ToString()

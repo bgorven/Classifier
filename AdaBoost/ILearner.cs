@@ -23,17 +23,17 @@ namespace AdaBoost
         /// files) are allocated for each sample, changing the sample will free or reuse resources
         /// allocated for the previous sample.
         /// </summary>
-        /// <value>The sample, which may be the same as the the previously set sample.</value>
-        TSample Sample { set; }
+        /// <param name="value">The sample, which may be the same as the the previously set sample.</param>
+        void SetSample(TSample value);
 
         /// <summary>
         /// Sets parameters for the following classification. A boost classifier may contain many
         /// references to the same learner instance, and test each sample many consecutive times,
         /// changing only the parameters each time.
         /// </summary>
-        /// <param name="parameter">A dictionary of parameters to be parsed according to some
+        /// <param name="configuration">A dictionary of parameters to be parsed according to some
         /// predetermined scheme.</param>
-        ILearner<TSample> WithParams(string parameter);
+        ILearner<TSample> WithConfiguration(string configuration);
 
         /// <summary>
         /// For improved performance, the output of this learner may be cached. This method allows the learner
@@ -43,11 +43,11 @@ namespace AdaBoost
         string UniqueId { get; }
 
         /// <summary>
-        /// During training, it may be desirable to iterate over every possible parameter of the learner.
+        /// During training, it may be desirable to iterate over every possible configuration of the learner.
         /// </summary>
-        /// <returns>an iterable object containing every valid parameter combination for the learner.</returns>
-        IEnumerable<string> GetPossibleParams();
+        /// <returns>an iterable object containing every valid configuration combination for the learner.</returns>
+        IEnumerable<string> AllPossibleConfigurations();
 
-        string Params { get; }
+        string Config { get; }
     }
 }

@@ -6,25 +6,24 @@ using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-namespace Util.Markup
+namespace Utilities.Markup
 {
     public class GridDefinitionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var definition = (DefinitionBase) value;
-            var grid = (Grid) definition.Parent;
-
-            if (definition is RowDefinition)
+            for (var def = value as RowDefinition; def != null;)
             {
-                return grid.RowDefinitions.IndexOf(definition as RowDefinition);
+                var grid = (Grid) def.Parent;
+                return grid.RowDefinitions.IndexOf(def);
             }
-            if (definition is ColumnDefinition)
+            for (var def = value as ColumnDefinition; def != null; )
             {
-                return grid.ColumnDefinitions.IndexOf(definition as ColumnDefinition);
+                var grid = (Grid)def.Parent;
+                return grid.ColumnDefinitions.IndexOf(def);
             }
             
-            throw new ArgumentException();
+            throw new ArgumentException("value should be a RowDefinition or ColumnDefinition.");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

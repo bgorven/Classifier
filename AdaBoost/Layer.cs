@@ -1,4 +1,7 @@
-﻿using Util.Collections;
+﻿using System;
+using System.Diagnostics;
+using System.Globalization;
+using Utilities.Collections;
 
 namespace AdaBoost
 {
@@ -16,23 +19,26 @@ namespace AdaBoost
             Threshold = threshold;
         }
 
-        public Layer(ILearner<TSample> learner, string config)
+        public Layer(ILearner<TSample> learner, string configuration)
         {
-            config = config.Substring(_learner.UniqueId.Length + 2);
-            _learner = learner.WithParams(config.Substring(0, config.LastIndexOf('>')));
-            config.Substring(config.LastIndexOf('>') + 1)
+            if (learner == null) throw new ArgumentNullException("learner");
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            configuration = configuration.Substring(_learner.UniqueId.Length + 2);
+            _learner = learner.WithConfiguration(configuration.Substring(0, configuration.LastIndexOf('>')));
+            configuration.Substring(configuration.LastIndexOf('>') + 1)
                 .Split(new[] {'?', ':'})
                 .Unpack(out Threshold, out CoefPos, out CoefNeg, float.Parse);
         }
 
         public override string ToString()
         {
-            return _learner.UniqueId + ": " + _learner.Params + "> " + Threshold.ToString("R") + " ? " + CoefPos.ToString("R") + " : " + CoefNeg.ToString("R");
+            return _learner.UniqueId + ": " + _learner.Config + "> " + Threshold.ToString("R", CultureInfo.InvariantCulture) + " ? " + CoefPos.ToString("R", CultureInfo.InvariantCulture) + " : " + CoefNeg.ToString("R", CultureInfo.InvariantCulture);
         }
 
         internal float Classify(TSample s)
         {
-            _learner.Sample = s;
+            _learner.SetSample(s);
             return _learner.Classify() > Threshold ? CoefPos : CoefNeg;
         }
     }

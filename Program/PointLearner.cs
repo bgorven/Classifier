@@ -16,9 +16,9 @@ namespace Program
 
         private Point _sample;
 
-        public Point Sample
+        public void SetSample(Point value)
         {
-            set { _sample = value; }
+            _sample = value;
         }
 
         public string UniqueId
@@ -26,16 +26,16 @@ namespace Program
             get { return "PointLearner"; }
         }
 
-        public string Params { get { return _rotation.ToString(CultureInfo.InvariantCulture); } }
+        public string Config { get { return _rotation.ToString(CultureInfo.InvariantCulture); } }
 
-        public ILearner<Point> WithParams(string parameters)
+        public ILearner<Point> WithConfiguration(string configuration)
         {
             var ret = this;
-            float.TryParse(parameters, out ret._rotation);
+            float.TryParse(configuration, out ret._rotation);
             return ret;
         }
 
-        public IEnumerable<string> GetPossibleParams()
+        public IEnumerable<string> AllPossibleConfigurations()
         {
             const float delta = 1/128f;
             for (float theta = 0; theta < Math.PI; theta += delta) yield return theta.ToString(CultureInfo.InvariantCulture);

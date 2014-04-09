@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Util.Collections
+namespace Utilities.Collections
 {
     public static class Enumerable
     {
@@ -12,7 +12,7 @@ namespace Util.Collections
         /// <param name="collection">The sequence to iterate.</param>
         public static void Apply<T>(this IEnumerable<T> collection)
         {
-// ReSharper disable once UnusedVariable
+            if (collection == null) throw new ArgumentNullException("collection");
             foreach (var element in collection) { }
         }
 
@@ -23,6 +23,8 @@ namespace Util.Collections
         /// <param name="action">An action to be executed for each element.</param>
         public static void Apply<T>(this IEnumerable<T> collection, Action<T> action)
         {
+            if (collection == null) throw new ArgumentNullException("collection");
+            if (action == null) throw new ArgumentNullException("action");
             foreach (var element in collection)
             {
                 action(element);
@@ -38,6 +40,8 @@ namespace Util.Collections
         public static void Zip<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second,
             Action<T1, T2> action)
         {
+            if (first == null || second == null) throw new ArgumentNullException(first == null? "first" : "second");
+            if (action == null) throw new ArgumentNullException("action");
             first.Zip(second, (f, s) =>
             {
                 action(f, s);
