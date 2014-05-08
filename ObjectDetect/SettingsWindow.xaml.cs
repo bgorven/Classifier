@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Validation;
 
 namespace ObjectDetect
 {
@@ -12,7 +13,7 @@ namespace ObjectDetect
         internal SettingsWindow()
         {
             InitializeComponent();
-            AddHandler(Validation.ErrorEvent, new RoutedEventHandler(CheckValidation));
+            AddHandler(ErrorEvent, new RoutedEventHandler(CheckValidation));
         }
 
         private void okButton_Click(object sender, RoutedEventArgs e)
@@ -26,7 +27,7 @@ namespace ObjectDetect
             OkButton.IsEnabled = true;
             foreach (var textBox in SettingsGrid.Children.OfType<TextBox>())
             {
-                if (Validation.GetHasError(textBox))
+                if (GetHasError(textBox))
                 {
                     OkButton.IsEnabled = false;
                 }

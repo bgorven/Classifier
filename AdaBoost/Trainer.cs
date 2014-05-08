@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,8 +37,8 @@ namespace AdaBoost
 
         }
 
-        private readonly Dictionary<string, Dictionary<string, float[]>> _cache =
-            new Dictionary<string, Dictionary<string, float[]>>();
+        private readonly Dictionary<string, IDictionary<string, float[]>> _cache =
+            new Dictionary<string, IDictionary<string, float[]>>();
 
         readonly TrainingSample<TSample>[] _positiveSamples;
         readonly TrainingSample<TSample>[] _negativeSamples;
@@ -139,26 +140,29 @@ namespace AdaBoost
             );
         }
 
-        private Dictionary<string, float[]> GetPredictions(ILearner<TSample> learner)
+        private IDictionary<string, float[]> GetPredictions(ILearner<TSample> learner)
         {
-            var predictions = new Dictionary<string, float[]>();
-
-            foreach (var s in _positiveSamples.Concat(_negativeSamples))
+            var predictions = new ConcurrentDictionary<string, float[]>();
+            
+            foreach (var config in learner.AllPossibleConfigurations())
             {
-                learner.SetSample(s.Sample);
+                if (config.IndexOfAny(new[] { '>', '?', ':', '\r', '\n' }) > 0)
+                {
+                    throw new FormatException("Learner configuration cannot contain any of '>', '?', ':', or a line break.");
+                }
+                predictions.TryAdd(config, new float[_positiveSamples.Length + _negativeSamples.Length]);
+            }
+
+            Parallel.ForEach(_positiveSamples.Concat(_negativeSamples), s =>
+            {
                 foreach (var config in learner.AllPossibleConfigurations())
                 {
-                    if (config.IndexOfAny(new[] { '>', '?', ':', '\r', '\n' }) > 0) throw new FormatException("Learner configuration cannot contain any of '>', '?', ':', or a line break.");
+                    learner = learner.WithConfiguration(config);
+                    learner.SetSample(s.Sample);
 
-                    if (!predictions.ContainsKey(config))
-                    {
-                        predictions.Add(config, new float[_positiveSamples.Length + _negativeSamples.Length]);
-                    }
-                    var temp = learner.WithConfiguration(config);
-
-                    predictions[config][s.Index] = temp.Classify();
+                    predictions[config][s.Index] = learner.Classify();
                 }
-            }
+            });
             return predictions;
         }
 
@@ -217,7 +221,7 @@ namespace AdaBoost
             var perfect = true;
             foreach (var s in _positiveSamples.Concat(_negativeSamples))
             {
-                learner.Sample = s.Sample;
+                learner.SetSample(s.Sample);
 // ReSharper disable CompareOfFloatsByEqualityOperator
                 if (learner.Classify() != outputs[s.Index])
                 {

@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -56,8 +57,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Arithmetic\KahanSum.cs" />
+    <Compile Include="Caching\ReferenceEqualityComparer.cs" />
+    <Compile Include="Caching\SimpleLRU.cs" />
     <Compile Include="Collections\Array.cs" />
     <Compile Include="Collections\ArraySegment.cs" />
+    <Compile Include="Collections\ConcurrentDictionary.cs" />
     <Compile Include="Collections\Enumerable.cs" />
     <Compile Include="Collections\Tuple.cs" />
     <Compile Include="Markup\GridDefinitionConverter.cs" />

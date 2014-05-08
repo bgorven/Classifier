@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Windows;
 using AdaBoost;
+using Utilities.Caching;
 
 namespace ObjectDetect
 {
@@ -14,12 +14,27 @@ namespace ObjectDetect
         private ImageSample _sample;
         private readonly Configuration _config;
         private Bitmap<int> _integralImage;
+        private int[] _histogram;
+        private int _histogramScale;
 
         private LBPImageLearner(Configuration config, LBPImageLearner lbpImageLearner)
         {
             _config = config;
-            _sample = lbpImageLearner._sample;
-            _integralImage = lbpImageLearner._integralImage;
+            if (lbpImageLearner._sample != null)
+            {
+                _sample = lbpImageLearner._sample;
+                _integralImage = lbpImageLearner._integralImage;
+                _histogramScale = _sample.Scale + config.RelativeScale;
+                if (_histogramScale == lbpImageLearner._histogramScale)
+                {
+                    _histogram = lbpImageLearner._histogram;
+                }
+                else
+                {
+                    _histogram = Histogram(_sample, _histogramScale);
+                }
+                _histogram = lbpImageLearner._histogram;
+            }
         }
 
         public LBPImageLearner()
@@ -51,11 +66,12 @@ namespace ObjectDetect
 
             internal static Configuration Parse(string configString)
             {
+                if (configString == null) throw new ArgumentNullException("configString");
                 var c = configString.Split(',');
                 byte scale, bucket;
                 if (c.Length != 2 || !byte.TryParse(c[0], out scale) || !byte.TryParse(c[1], out bucket))
                 {
-                    throw new ArgumentException();
+                    throw new FormatException("configuration \"" + configString + "\" is not formatted correctly.");
                 }
                 return new Configuration(scale, bucket);
             }
@@ -72,28 +88,40 @@ namespace ObjectDetect
 
         public float Classify()
         {
-            var zoom = _sample.GetZoomLevelAtScale(_sample.Scale + _config.RelativeScale);
-            //int[] buckets = new int[(1 << Configuration.numSurroundingPixels) - 1];
-            var retVal = 0;
-            for (var x = 0; x < _sample.PixelCount; x++) {
-                for (var y = 0; y < _sample.PixelCount; y++)
+            try
+            {
+                return _histogram[_config.Bucket];
+            }
+            catch (NullReferenceException e)
+            {
+                MessageBox.Show(e.Message);
+                return 0f;
+            }
+        }
+
+        private int[] Histogram(ImageSample sample, int histogramScale)
+        {
+            var buckets = new int[1 << Configuration.NumSurroundingPixels];
+            var zoom = sample.GetZoomLevelAtScale(histogramScale);
+
+            for (var x = 0; x < sample.PixelCount; x++)
+            {
+                for (var y = 0; y < sample.PixelCount; y++)
                 {
-                    var center = GetPixelValue(x, y, zoom, _sample.Location.X, _sample.Location.Y);
+                    var center = GetPixelValue(x, y, zoom, sample.Location.X, sample.Location.Y);
                     var bucket = 0;
                     for (var i = 0; i < Configuration.NumSurroundingPixels; i++)
                     {
                         bucket <<= 1;
-                        if (GetSurroundingPixVal(i, x, y, zoom, _sample.Location.X, _sample.Location.Y) > center)
+                        if (GetSurroundingPixVal(i, x, y, zoom, sample.Location.X, sample.Location.Y) > center)
                         {
                             bucket |= 1;
                         }
-                        if (bucket == _config.Bucket) retVal++;
-                        //buckets[bucket]++;
+                        buckets[bucket]++;
                     }
                 }
             }
-            return retVal;
-            //return buckets[config.bucket];
+            return buckets;
         }
 
         private FixedPoint GetSurroundingPixVal(int n, int x, int y, FixedPoint zoom, FixedPoint xBase, FixedPoint yBase)
@@ -140,89 +168,25 @@ namespace ObjectDetect
             return x >= 0 && y >= 0 && x < _integralImage.Width && y < _integralImage.Height;
         }
 
-        private static readonly ConcurrentDictionary<string, WeakReference<Bitmap<int>>> IntImageCache = new ConcurrentDictionary<string, WeakReference<Bitmap<int>>>();
+        private const int CacheSize = 32;
+        private static readonly SimpleLRU<string, Bitmap<int>> IntImageCache = new SimpleLRU<string, Bitmap<int>>(CacheSize);
 
-        public void SetSample(ImageSample value)
+        public void SetSample(ImageSample sample)
         {
-            if (!value.FileEquals(_sample))
+            if (sample == null)
             {
-                var entry = IntImageCache.GetOrAdd(value.FileName, new WeakReference<Bitmap<int>>(null));
-                lock (entry)
+                throw new ArgumentNullException("sample");
+            }
+            if (sample != _sample)
+            {
+                if (!sample.FileEquals(_sample))
                 {
-                    if (!entry.TryGetTarget(out _integralImage))
-                    {
-                        var src = new Bitmap(value.FileName);
-                        var image = new Bitmap(src.Width, src.Height, PixelFormat.Format24bppRgb);
-                        var theWholeImage = new System.Drawing.Rectangle(0, 0, image.Width, image.Height);
-                        using (var gr = Graphics.FromImage(image))
-                        {
-                            using (var attr = new ImageAttributes())
-                            {
-                                attr.SetColorMatrix(new ColorMatrix(
-                                    new[]
-                                    {
-                                        new[] {.3f, .3f, .3f, 0, 0},
-                                        new[] {.59f, .59f, .59f, 0, 0},
-                                        new[] {.11f, .11f, .11f, 0, 0},
-                                        new[] {0, 0, 0, 1f, 0},
-                                        new[] {0, 0, 0, 0, 1f}
-                                    }));
-                                gr.DrawImage(src, theWholeImage, 0, 0, src.Width, src.Height, GraphicsUnit.Pixel, attr);
-                            }
-                        }
-                        src.Dispose();
-
-                        var imData = image.LockBits(
-                            theWholeImage,
-                            ImageLockMode.ReadOnly,
-                            image.PixelFormat);
-
-                        var width = image.Width;
-                        var height = image.Height;
-                        var dst = new int[height][];
-
-                        //sum each row independently
-                        Parallel.For(0, height, y => dst[y] = SumRow(y*imData.Stride, width, imData));
-
-                        image.UnlockBits(imData);
-                        image.Dispose();
-
-
-                        //sum columns
-                        for (var y = 1; y < height; y++)
-                        {
-                            for (var x = 0; x < width; x++)
-                            {
-                                var prevSum = dst[y - 1][x];
-                                var thisSum = dst[y][x];
-                                dst[y][x] = prevSum + thisSum;
-                            }
-                        }
-
-                        _integralImage = new Bitmap<int>(dst, width, height);
-
-                        entry.SetTarget(_integralImage);
-                    }
+                    _integralImage = IntImageCache.GetOrAdd(sample.FileName, sample.FileName.IntegralImage);
                 }
+                _sample = sample;
+                _histogramScale = sample.Scale + _config.RelativeScale;
+                _histogram = Histogram(sample, _histogramScale);
             }
-            _sample = value;
-        }
-
-        private static unsafe int[] SumRow(int offset, int width, BitmapData src)
-        {
-            if (src.PixelFormat != PixelFormat.Format24bppRgb) throw new ArgumentException("src");
-            const int pixSize = 3;
-
-            var srcRow = (byte*) src.Scan0 + offset;
-            var dstRow = new int[width];
-            var accumulator = 0;
-
-            for (var x = 0; x < width; x++)
-            {
-                accumulator += srcRow[x*pixSize];
-                dstRow[x] = accumulator;
-            }
-            return dstRow;
         }
 
         public ILearner<ImageSample> WithConfiguration(string configuration)

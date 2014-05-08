@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Windows;
 using AdaBoost;
@@ -76,7 +77,7 @@ namespace ObjectDetect
                     {
                         fileIter.Dispose();
                         fileIter = fileList.GetEnumerator();
-                        if (!intIter.MoveNext()) throw new IndexOutOfRangeException("Not enough integers.");
+                        if (!intIter.MoveNext()) throw new CryptographicUnexpectedOperationException("Not enough integers.");
                     }
                 }
                 return negatives;

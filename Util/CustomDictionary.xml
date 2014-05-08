@@ -4,4 +4,10 @@
       <Word>Kahan</Word>
     </Recognized>
   </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <Acronym>LRU</Acronym>
+      <Acronym>MRU</Acronym>
+    </CasingExceptions>
+  </Acronyms>
 </Dictionary>

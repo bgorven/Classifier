@@ -104,7 +104,7 @@ namespace ObjectDetect
         }
         internal Rectangle GetRectangle(int index)
         {
-            if (index < 0) throw new ArgumentOutOfRangeException();
+            if (index < 0) throw new ArgumentOutOfRangeException("index");
             var indexRange = 0;
             foreach (var winSz in WinSizes())
             {
@@ -125,7 +125,7 @@ namespace ObjectDetect
                 var h = winSz;
                 return new Rectangle(x, y, w, h);
             }
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException("index");
         }
 
         //private FixedPoint WinSize(int size)
@@ -162,9 +162,13 @@ namespace ObjectDetect
             //double offset = (winSz / Math.Pow(2, offsetExp));
             //return checked((int)Math.Floor(availableWidth / offset) + 1);
 
+            if (winSz < 0)
+            {
+                throw new ArgumentOutOfRangeException("winSz");
+            }
             if (length < winSz)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("length");
             }
             return ((length / winSz - 1) << _offsetExp).Floor() + 1;
         }
@@ -200,7 +204,7 @@ namespace ObjectDetect
 
         internal int GetScale(int index)
         {
-            if (index < 0) throw new ArgumentOutOfRangeException();
+            if (index < 0) throw new ArgumentOutOfRangeException("index");
             int scale = 0, indexRange = 0;
             foreach (var winSz in WinSizes())
             {
@@ -208,7 +212,7 @@ namespace ObjectDetect
                 if (indexRange > index) return scale;
                 scale++;
             }
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException("index");
         }
 
         internal FixedPoint GetZoomLevelAtScale(int scale)

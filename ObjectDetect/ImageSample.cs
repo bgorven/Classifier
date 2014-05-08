@@ -4,8 +4,8 @@ namespace ObjectDetect
 {
     public class ImageSample : ISample
     {
-        public readonly string FileName;
-        public readonly int WindowIndex;
+        internal readonly string FileName;
+        internal readonly int WindowIndex;
         internal readonly SlidingWindow WindowManager;
         internal Rectangle Location { get { return WindowManager.GetRectangle(WindowIndex); } }
         public int Scale { get { return WindowManager.GetScale(WindowIndex); } }
@@ -30,10 +30,11 @@ namespace ObjectDetect
 
         public override bool Equals(object obj)
         {
-            if (!(obj is ImageSample)) return false;
-            var other = (ImageSample)obj;
-
-            return Location.Equals(other.Location) && FileName.Equals(other.FileName);
+            for (var other = obj as ImageSample; other != null; )
+            {
+                return Location.Equals(other.Location) && FileName.Equals(other.FileName);
+            }
+            return false;
         }
 
         public override int GetHashCode()

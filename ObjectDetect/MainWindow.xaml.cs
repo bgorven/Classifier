@@ -10,7 +10,7 @@ namespace ObjectDetect
     /// </summary>
     public partial class MainWindow : Window
     {
-        internal MainWindow()
+        public MainWindow()
         {
             InitializeComponent();
             _data = new WindowData(this);
@@ -130,7 +130,7 @@ namespace ObjectDetect
 
         internal bool Confirm_Discard_Changes()
         {
-            return MessageBox.Show("Discard unsaved changes?", "Datafile Not Saved", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+            return MessageBox.Show(this, "Discard unsaved changes?", "Data file Not Saved", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
         }
 
         private void Canvas_KeyDown(object sender, KeyEventArgs e)
