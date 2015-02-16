@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using System.Threading;
 
 namespace ObjectDetect
 {
@@ -43,7 +44,7 @@ namespace ObjectDetect
             X, Y, Size
         }
 
-        internal async Task Load_File()
+        internal async Task Load_File(CancellationToken cancellation, IProgress<Tuple<string, int>> currentTaskAndPercentComplete)
         {
             if (UnsavedChangesPresent && !_window.Confirm_Discard_Changes()) return;
 
@@ -54,7 +55,12 @@ namespace ObjectDetect
             };
             if (dialog.ShowDialog() ?? false)
             {
-                FileList = await FileAccess.LoadInfo(dialog.FileName);
+                FileList = await FileAccess.LoadInfo(dialog.FileName, cancellation, currentTaskAndPercentComplete);
+                if (cancellation.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 UnsavedChangesPresent = false;
                 if (FileList.Any())
                 {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Windows;
 using ObjectDetect.Properties;
+using System.Threading;
 
 namespace ObjectDetect
 {
@@ -31,7 +32,7 @@ namespace ObjectDetect
         }
 
         //internal const int smallestWindow = 64, biggestWindow = 512, windowStep = 4, offsetStep = 6, imageWidth = 5184, imageHeight = 3456;
-        internal static async Task<List<FileEntry>> LoadInfo(string dataFileName)
+        internal static async Task<List<FileEntry>> LoadInfo(string dataFileName, CancellationToken cancellation, IProgress<Tuple<string, int>> currentTaskAndPercentComplete)
         {
             var fileList = new List<FileEntry>();
 
@@ -48,11 +49,20 @@ namespace ObjectDetect
                         lineNo++;
                         var words = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
                         string fileName;
+
+
                         int width, height;
                         if (words.Length < 2) continue;
                         else
                         {
                             fileName = Path.Combine(directory, words[0]);
+
+                            if (cancellation.IsCancellationRequested)
+                            {
+                                return null;
+                            }
+                            currentTaskAndPercentComplete.Report(Tuple.Create("Opening \"" + fileName + "\"", -1));
+
                             try
                             {
                                 using (var image = new Bitmap(fileName))

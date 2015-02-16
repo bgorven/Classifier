@@ -2,6 +2,9 @@
 using System.Windows;
 using System.Windows.Input;
 using ObjectDetect.Properties;
+using System.Threading;
+using System;
+using System.Threading.Tasks;
 
 namespace ObjectDetect
 {
@@ -32,7 +35,9 @@ namespace ObjectDetect
 
         private async void MenuItem_Dataset_Open(object sender, RoutedEventArgs e)
         {
-            await _data.Load_File();
+            await Cancellable(cancellation => _data.Load_File(
+                cancellation: cancellation,
+                currentTaskAndPercentComplete: new Progress<Tuple<string, int>>(ProgressUpdate)));
             Keyboard.Focus(Canvas);
             e.Handled = true;
         }
@@ -103,10 +108,45 @@ namespace ObjectDetect
             if (_data.UnsavedChangesPresent && !Confirm_Discard_Changes()) e.Cancel = true;
         }
 
-        private void MenuItem_Classifier_Train(object sender, RoutedEventArgs e)
+        private async void MenuItem_Classifier_Train(object sender, RoutedEventArgs e)
         {
+
             var detector = new Detector(_data.FileList, Settings.Default.numPositive, Settings.Default.numNegative);
-            detector.Train(Settings.Default.numLayers);
+
+            await Cancellable(cancellation =>
+                detector.Train(
+                    numLayers: Settings.Default.numLayers,
+                    cancellation: cancellation,
+                    taskAndPercentComplete: new Progress<Tuple<string, int>>(ProgressUpdate)));
+
+        }
+
+        private async Task Cancellable(Func<CancellationToken, Task> action)
+        {
+            using (var cancellationSource = new CancellationTokenSource())
+            {
+                RoutedEventHandler cancelEvent = (_, __) => cancellationSource.Cancel();
+                CancelButton.Click += cancelEvent;
+                CancelButton.IsEnabled = true;
+
+                await action(cancellationSource.Token);
+
+                CancelButton.IsEnabled = false;
+                CancelButton.Click -= cancelEvent;
+            }
+        }
+
+        private void ProgressUpdate(Tuple<string, int> progress)
+        {
+            CurrentTask.Content = progress.Item1;
+            if (progress.Item2 >= 0 && progress.Item2 <= 100)
+            {
+                Progress.IsIndeterminate = false;
+                Progress.Value = progress.Item2;
+            } else
+            {
+                Progress.IsIndeterminate = true;
+            }
         }
 
         private void MenuItem_Classifier_Save(object sender, RoutedEventArgs e)

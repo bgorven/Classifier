@@ -31,9 +31,14 @@ namespace ObjectDetect
                 }
                 else
                 {
+#if DEBUG
+                    if (config.Bucket != 0)
+                    {
+                        throw new Exception();
+                    }
+#endif
                     _histogram = Histogram(_sample, _histogramScale);
                 }
-                _histogram = lbpImageLearner._histogram;
             }
         }
 
@@ -168,7 +173,7 @@ namespace ObjectDetect
             return x >= 0 && y >= 0 && x < _integralImage.Width && y < _integralImage.Height;
         }
 
-        private const int CacheSize = 32;
+        private const int CacheSize = 128;
         private static readonly SimpleLRU<string, Bitmap<int>> IntImageCache = new SimpleLRU<string, Bitmap<int>>(CacheSize);
 
         public void SetSample(ImageSample sample)

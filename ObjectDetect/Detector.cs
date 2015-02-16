@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using AdaBoost;
 using Utilities.Random;
+using System.Threading;
 
 namespace ObjectDetect
 {
@@ -25,11 +26,11 @@ namespace ObjectDetect
             _trainer = new Trainer<ImageSample>(new[] { new LBPImageLearner() }, positives, negatives);
         }
 
-        internal void Train(int numLayers)
+        internal async Task Train(int numLayers, CancellationToken cancellation, IProgress<Tuple<string, int>> taskAndPercentComplete)
         {
             for (var i = numLayers; i > 0; i--)
             {
-                _trainer.AddLayer();
+                await Task.Run(() => _trainer.AddLayer(cancellation, taskAndPercentComplete));
             }
         }
 

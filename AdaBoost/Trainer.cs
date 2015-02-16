@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace AdaBoost
 {
@@ -45,13 +46,18 @@ namespace AdaBoost
 
         readonly ILearner<TSample>[] _learners;
 
+        private CancellationToken _cancellation;
+        private IProgress<Tuple<string, int>> _progress;
 
         /// <summary>
         /// Executes one iteration of the training process.
         /// </summary>
         /// <returns>the current value of the error function over all samples.</returns>
-        public float AddLayer()
+        public float AddLayer(CancellationToken cancellation = default(CancellationToken), IProgress<Tuple<string, int>> currentTaskAndPercentComplete = null)
         {
+            _cancellation = cancellation;
+            _progress = currentTaskAndPercentComplete;
+
             _bestLoss = float.PositiveInfinity;
             double loss = 0;
 
@@ -59,6 +65,11 @@ namespace AdaBoost
             foreach (var learner in _learners)
             {
                 BestConfiguration(learner);
+            }
+
+            if (_cancellation.IsCancellationRequested)
+            {
+                return float.NaN;
             }
 
             //Reversing the learner list each iteration means our mru cache will behave more like an lru cache
@@ -125,42 +136,81 @@ namespace AdaBoost
 
         private void BestConfiguration(ILearner<TSample> learner)
         {
-            if (!_cache.ContainsKey(learner.UniqueId))
+            var predictions = _cache.ContainsKey(learner.UniqueId) ? _cache[learner.UniqueId] : (_cache[learner.UniqueId] = GetPredictions(learner));
+
+            var best = new LayerHolder(float.PositiveInfinity, null, null);
+
+            var sampleCount = predictions.Count;
+            var samplesProcessed = 0;
+
+            foreach (var p in predictions)
             {
-                _cache[learner.UniqueId] = GetPredictions(learner);
+                best = BestLayerSetup(learner.WithConfiguration(p.Key), p.Value, best);
+                SetBest(best);
+
+                if (_cancellation.IsCancellationRequested)
+                {
+                    return;
+                }
+                if (_progress != null)
+                {
+                    samplesProcessed++;
+                    _progress.Report(Tuple.Create("Finding best setup for \"" + learner.UniqueId + "\"", samplesProcessed * 100 / sampleCount));
+                }
             }
-
-            var predictions = _cache[learner.UniqueId];
-
-            Parallel.ForEach(
-                predictions,
-                () => new LayerHolder(float.PositiveInfinity, null, null),
-                (p, s, best) => BestLayerSetup(learner.WithConfiguration(p.Key), p.Value, best),
-                SetBest
-            );
+            //Parallel.ForEach(
+            //    predictions,
+            //    () => new LayerHolder(float.PositiveInfinity, null, null),
+            //    (p, s, best) => BestLayerSetup(learner.WithConfiguration(p.Key), p.Value, best),
+            //    SetBest
+            //);
         }
 
         private IDictionary<string, float[]> GetPredictions(ILearner<TSample> learner)
         {
             var predictions = new ConcurrentDictionary<string, float[]>();
-            
+            var sampleCount = _positiveSamples.Length + _negativeSamples.Length;
+            var samplesProcessed = 0;
+
             foreach (var config in learner.AllPossibleConfigurations())
             {
                 if (config.IndexOfAny(new[] { '>', '?', ':', '\r', '\n' }) > 0)
                 {
                     throw new FormatException("Learner configuration cannot contain any of '>', '?', ':', or a line break.");
                 }
-                predictions.TryAdd(config, new float[_positiveSamples.Length + _negativeSamples.Length]);
+                predictions.TryAdd(config, new float[sampleCount]);
             }
 
             Parallel.ForEach(_positiveSamples.Concat(_negativeSamples), s =>
             {
+                var localLearner = learner;
+                localLearner.SetSample(s.Sample);
+
                 foreach (var config in learner.AllPossibleConfigurations())
                 {
-                    learner = learner.WithConfiguration(config);
-                    learner.SetSample(s.Sample);
+                    localLearner = localLearner.WithConfiguration(config);
 
                     predictions[config][s.Index] = learner.Classify();
+                }
+
+                if (_cancellation.IsCancellationRequested)
+                {
+                    return;
+                }
+                if (_progress != null)
+                {
+                    if (Monitor.TryEnter(_progress))
+                    {
+                        try
+                        {
+                            samplesProcessed++;
+                            _progress.Report(Tuple.Create("Running learner \"" + learner.UniqueId + "\"", samplesProcessed * 100 / sampleCount));
+                        }
+                        finally
+                        {
+                            Monitor.Exit(_progress);
+                        }
+                    }
                 }
             });
             return predictions;

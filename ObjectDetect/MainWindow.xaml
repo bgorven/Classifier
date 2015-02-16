@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525"
         Closing="Window_Closing">
-    <DockPanel>
+    <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Dataset">
                 <MenuItem Header="_Open" Click="MenuItem_Dataset_Open"/>
@@ -21,6 +21,20 @@
             </MenuItem>
         </Menu>
         
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.RowDefinitions>
+                <RowDefinition Name="LabelRow" Height="auto"/>
+                <RowDefinition Name="ProgressRow" Height="auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Name="ContentCol" Width="*" />
+                <ColumnDefinition Name="ButtonCol" Width="auto" />
+            </Grid.ColumnDefinitions>
+            <Label Name="CurrentTask" Grid.Row="0" Grid.Column="0" >Progress</Label>
+            <ProgressBar Name="Progress" Grid.Row="1" Grid.Column="0" IsIndeterminate="False" Value="0"/>
+            <Button Name="CancelButton" Height="auto" Width="auto" Grid.Row="1" Grid.Column="1" IsEnabled="False" >Cancel</Button>
+        </Grid>
+
         <ScrollViewer Height="auto" Width="auto" Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <Canvas Height="auto" Width="auto" Name="Canvas" Focusable="True"
                     MouseWheel="canvas_MouseWheel" 
@@ -29,5 +43,6 @@
                     MouseUp="Canvas_MouseUp"
                     KeyDown="Canvas_KeyDown" />
         </ScrollViewer>
+
     </DockPanel>
 </Window>

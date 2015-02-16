@@ -17,6 +17,7 @@ namespace Utilities.Caching
         private readonly ConcurrentDictionary<Lazy<TValue>, object> _keepAlive;
         private ICollection<Lazy<TValue>> _keepPrev;
         private readonly ConcurrentDictionary<TKey, WeakReference<Lazy<TValue>>> _cache = new ConcurrentDictionary<TKey, WeakReference<Lazy<TValue>>>();
+        private static int hits = 0, misses = 0;
 
         /// <summary>
         /// Simplest possible concurrent LRU cache. Uses a <see cref="ConcurrentDictionary{T}"/> of weak references to 
@@ -33,12 +34,22 @@ namespace Utilities.Caching
         {
             var lazy = new Lazy<TValue>(valueFactory);
             var wref = _cache.GetOrAdd(key, new WeakReference<Lazy<TValue>>(lazy));
-            
+
+            bool hit = true;
             while (!wref.TryGetTarget(out lazy))
             {
+                hit = false;
                 lazy = new Lazy<TValue>(valueFactory);
                 _cache.TryUpdate(key, new WeakReference<Lazy<TValue>>(lazy), wref);
                 _cache.TryGetValue(key, out wref);
+            }
+
+            if (hit)
+            {
+                Interlocked.Increment(ref hits);
+            } else
+            {
+                Interlocked.Increment(ref misses);
             }
                 
             KeepAlive(lazy);
@@ -59,9 +70,10 @@ namespace Utilities.Caching
                 {
                     _keepPrev = _keepAlive.Keys;    //No guarantees about the ACTUAL
                     _keepAliveCount = 0;            //number of items cached.
+                    object ignored;
                     foreach (var k in _keepPrev)
                     {
-                        _keepAlive.TryRemove(k, out var ignored);
+                        _keepAlive.TryRemove(k, out ignored);
                     }
                 }
                 finally
